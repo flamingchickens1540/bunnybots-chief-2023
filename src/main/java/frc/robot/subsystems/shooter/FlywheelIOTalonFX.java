@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.flywheel;
+package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -25,7 +25,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 
 public class FlywheelIOTalonFX implements FlywheelIO {
-  private static final double GEAR_RATIO = 1.5;
+  private static final double GEAR_RATIO = 22/16;
 
   private final TalonFX leader = new TalonFX(0);
   private final TalonFX follower = new TalonFX(1);
@@ -82,7 +82,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @Override
   public void configurePID(double kP, double kI, double kD) {
-    var config = new Slot0Configs();
+    Slot0Configs config = new Slot0Configs();
     config.kP = kP;
     config.kI = kI;
     config.kD = kD;

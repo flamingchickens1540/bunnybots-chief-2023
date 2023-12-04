@@ -30,10 +30,7 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
-import frc.robot.subsystems.flywheel.Flywheel;
-import frc.robot.subsystems.flywheel.FlywheelIO;
-import frc.robot.subsystems.flywheel.FlywheelIOSim;
-import frc.robot.subsystems.flywheel.FlywheelIOSparkMax;
+import frc.robot.subsystems.shooter.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
@@ -47,6 +44,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Flywheel flywheel;
+  private final Shooter shooter;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -69,6 +67,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3));
         flywheel = new Flywheel(new FlywheelIOSparkMax());
+        shooter = new Shooter(new FlywheelIOTalonFX(), new FlywheelIOSparkMax(), new FlywheelIOSparkMaxSingle(10));
         // drive = new Drive(
         // new GyroIOPigeon2(),
         // new ModuleIOTalonFX(0),
@@ -88,6 +87,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         flywheel = new Flywheel(new FlywheelIOSim());
+        shooter = null;
         break;
 
       default:
@@ -100,6 +100,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
+        shooter = null;
         break;
     }
 
@@ -121,6 +122,14 @@ public class RobotContainer {
         "Flywheel FF Characterization",
         new FeedForwardCharacterization(
             flywheel, flywheel::runCharacterizationVolts, flywheel::getCharacterizationVelocity));
+    autoChooser.addOption(
+            "Shooter Main FF Characterization",
+            new FeedForwardCharacterization(
+                    shooter, shooter::runMainCharacterizationVolts, shooter::getMainCharacterizationVelocity));
+    autoChooser.addOption(
+            "Shooter Secondary FF Characterization",
+            new FeedForwardCharacterization(
+                    shooter, shooter::runSecondaryCharacterizationVolts, shooter::getSecondaryCharacterizationVelocity));
 
     // Configure the button bindings
     configureButtonBindings();

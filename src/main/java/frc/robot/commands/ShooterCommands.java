@@ -1,0 +1,71 @@
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.shooter.Shooter;
+
+public class ShooterCommands {
+    public class Shoot extends Command {
+
+
+        Shooter shooter;
+        double mainRPM;
+        double secondaryRPM;
+
+        enum State{INIT,SPINUP,SHOOTING,DONE}
+        State state = State.SPINUP;
+        public Shoot(Shooter shooter){
+            this.shooter = shooter;
+        }
+
+        @Override
+        public void execute() {
+
+            switch (state){
+                case INIT -> {
+                    shooter.setLoadingVoltage(-8);
+                    state = State.SPINUP;
+                }
+                case SPINUP -> {
+                    shooter.setMainVelocity(mainRPM);
+                    shooter.setSecondaryVelocity(secondaryRPM);
+                    if(shooter.getMainVelocityRPM() == mainRPM && shooter.getSecondaryVelocityRPM() == secondaryRPM){
+                        shooter.setLoadingVoltage(10);
+                        state = State.SHOOTING;
+                    }
+                }
+                case SHOOTING -> {
+                    if(true){
+                        state = State.DONE;
+                    }
+
+                }
+            }
+        }
+
+        @Override
+        public boolean isFinished() {
+            return state == State.DONE;
+        }
+    }
+
+    public class ShooterIdle extends Command {
+        Shooter shooter;
+
+        private final double mainIdleRPM = 8000;
+        private final double secondaryIdleRPM = 4000;
+        private final double loadingIdleVoltage = -8;
+
+
+        public ShooterIdle(Shooter shooter){
+            this.shooter = shooter;
+        }
+
+        @Override
+        public void initialize() {
+            shooter.setMainVelocity(mainIdleRPM);
+            shooter.setSecondaryVoltage(secondaryIdleRPM);
+            shooter.setLoadingVoltage(loadingIdleVoltage);
+        }
+    }
+
+}
