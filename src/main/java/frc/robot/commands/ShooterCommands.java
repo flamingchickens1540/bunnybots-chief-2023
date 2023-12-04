@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.shooter.Shooter;
 
 public class ShooterCommands {
-  public class Shoot extends Command {
+  public static class Shoot extends Command {
 
     Shooter shooter;
     double mainRPM;
@@ -21,6 +21,7 @@ public class ShooterCommands {
 
     public Shoot(Shooter shooter) {
       this.shooter = shooter;
+      addRequirements(shooter);
     }
 
     @Override
@@ -54,7 +55,7 @@ public class ShooterCommands {
     }
   }
 
-  public class ShooterIdle extends Command {
+  public static class ShooterIdle extends Command {
     Shooter shooter;
 
     private final double mainIdleRPM = 8000;
@@ -63,12 +64,13 @@ public class ShooterCommands {
 
     public ShooterIdle(Shooter shooter) {
       this.shooter = shooter;
+      addRequirements(shooter);
     }
 
     @Override
     public void initialize() {
       shooter.setMainVelocity(mainIdleRPM);
-      shooter.setSecondaryVoltage(secondaryIdleRPM);
+      shooter.setSecondaryVelocity(secondaryIdleRPM);
       shooter.setLoadingVoltage(loadingIdleVoltage);
     }
   }

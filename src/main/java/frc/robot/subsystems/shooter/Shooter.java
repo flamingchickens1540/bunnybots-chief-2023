@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.LoggedTunableNumber;
+import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -29,8 +30,6 @@ public class Shooter extends SubsystemBase {
   private double mainSetpoint = 0;
   private double secondarySetpoint = 0;
 
-  private boolean isClosedLoop;
-
   public Shooter(FlywheelIO mainWheelIO, FlywheelIO secondaryWheelIO, FlywheelIO loadingWheelIO) {
     this.mainWheelIO = mainWheelIO;
     this.secondaryWheelIO = secondaryWheelIO;
@@ -45,6 +44,8 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/main", mainWheelInputs);
     Logger.processInputs("Shooter/secondary", secondaryWheelInputs);
     Logger.processInputs("Shooter/loading", loadingWheelInputs);
+    Logger.recordOutput("Shooter/mainSetpoint", mainSetpoint);
+    Logger.recordOutput("Shooter/secondarySetpoint", secondarySetpoint);
 
     if (TUNING) {
       if (kPMain.hasChanged() || kIMain.hasChanged() || kDMain.hasChanged()) {
@@ -58,11 +59,13 @@ public class Shooter extends SubsystemBase {
 
   public void setMainVelocity(double RPM) {
     double rpmRadSec = Units.rotationsPerMinuteToRadiansPerSecond(RPM);
+    mainSetpoint = RPM;
     mainWheelIO.setVelocity(rpmRadSec, mainff.calculate(rpmRadSec));
   }
 
   public void setSecondaryVelocity(double RPM) {
     double rpmRadSec = Units.rotationsPerMinuteToRadiansPerSecond(RPM);
+    secondarySetpoint = RPM;
     secondaryWheelIO.setVelocity(rpmRadSec, mainff.calculate(rpmRadSec));
   }
 

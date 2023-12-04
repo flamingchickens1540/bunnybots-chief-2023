@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -70,7 +71,7 @@ public class RobotContainer {
         shooter =
             new Shooter(
                 new FlywheelIOTalonFX(),
-                new FlywheelIOSparkMax(),
+                new FlywheelIOSparkMaxSingle(1),
                 new FlywheelIOSparkMaxSingle(10));
         // drive = new Drive(
         // new GyroIOPigeon2(),
@@ -156,6 +157,8 @@ public class RobotContainer {
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
+
+    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     controller
         .b()
