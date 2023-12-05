@@ -32,6 +32,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.shooter.*;
+import frc.robot.util.Limelight;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
@@ -46,6 +47,8 @@ public class RobotContainer {
   private final Drive drive;
   private final Flywheel flywheel;
   private final Shooter shooter;
+
+  private final Limelight limelight = new Limelight("limelight");
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -174,6 +177,13 @@ public class RobotContainer {
         .whileTrue(
             Commands.startEnd(
                 () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
+    controller.x()
+            .whileTrue(DriveCommands.LimelightRotDrive(
+              drive,
+              () -> -controller.getLeftY(),
+              () -> -controller.getLeftX(),
+                    limelight))
+            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
   }
 
   /**
