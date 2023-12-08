@@ -25,12 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.ShooterCommands;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.shooter.*;
@@ -67,10 +62,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOSparkMax(0),
-                new ModuleIOSparkMax(1),
-                new ModuleIOSparkMax(2),
-                new ModuleIOSparkMax(3));
+                new ModuleIOTalonFX(0, 3),
+                new ModuleIOTalonFX(1, 4),
+                new ModuleIOTalonFX(2, 7),
+                new ModuleIOTalonFX(3, 1));
         flywheel = new Flywheel(new FlywheelIOSparkMax());
         shooter =
             new Shooter(

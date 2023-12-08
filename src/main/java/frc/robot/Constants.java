@@ -34,4 +34,28 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static class Drivetrain{
+    public static final double[] offsets = new double[]{
+            75.469, // Module 1
+            91.318 - 90,  // Module 2
+            256.729 + 3, // Module 3
+            9.0,     // Module 4
+            239.766, // Module 5
+            32.08,  // Module 6
+            27.861, // Module 7
+            105.011 + 3  // Module 8
+    };
+
+
+    public static final double[] cornerOffsets = new double[]{
+            90, // Front Left
+            90, // Front Right
+            180, // Back Left
+            90 // Back Right
+    };
+
+
+
+  }
 }
