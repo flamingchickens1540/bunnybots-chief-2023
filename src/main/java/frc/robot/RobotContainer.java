@@ -31,8 +31,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.limelight.Limelight;
+import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.shooter.*;
-import frc.robot.util.Limelight;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
@@ -48,7 +49,7 @@ public class RobotContainer {
   private final Flywheel flywheel;
   private final Shooter shooter;
 
-  private final Limelight limelight = new Limelight("limelight");
+  private final Limelight limelight;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -76,6 +77,7 @@ public class RobotContainer {
                 new FlywheelIOTalonFX(),
                 new FlywheelIOSparkMaxSingle(1),
                 new FlywheelIOSparkMaxSingle(10));
+        limelight = new Limelight(new LimelightIOReal());
         // drive = new Drive(
         // new GyroIOPigeon2(),
         // new ModuleIOTalonFX(0),
@@ -96,6 +98,7 @@ public class RobotContainer {
                 new ModuleIOSim());
         flywheel = new Flywheel(new FlywheelIOSim());
         shooter = null;
+        limelight = null;
         break;
 
       default:
@@ -109,6 +112,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
         shooter = null;
+        limelight = null;
         break;
     }
 

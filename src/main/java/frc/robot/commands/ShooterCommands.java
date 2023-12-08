@@ -1,8 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.util.Limelight;
 
 public class ShooterCommands {
   public static class Shoot extends Command {
