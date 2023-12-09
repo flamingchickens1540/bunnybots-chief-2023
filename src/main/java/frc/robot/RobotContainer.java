@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.IndexerDefaultCommand;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -31,6 +32,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOReal;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.util.Limelight;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -47,6 +51,7 @@ public class RobotContainer {
   private final Drive drive;
   private final Flywheel flywheel;
   private final Shooter shooter;
+  private final Indexer indexer;
 
   private final Limelight limelight = new Limelight("limelight");
 
@@ -83,6 +88,7 @@ public class RobotContainer {
         // new ModuleIOTalonFX(2),
         // new ModuleIOTalonFX(3));
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
+        indexer = new Indexer(new IndexerIOReal());
         break;
 
       case SIM:
@@ -96,6 +102,7 @@ public class RobotContainer {
                 new ModuleIOSim());
         flywheel = new Flywheel(new FlywheelIOSim());
         shooter = null;
+        indexer = null;
         break;
 
       default:
@@ -109,6 +116,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
         shooter = null;
+        indexer = null;
         break;
     }
 
@@ -162,6 +170,7 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
+    indexer.setDefaultCommand(new IndexerDefaultCommand(indexer));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     controller
         .b()
@@ -183,7 +192,7 @@ public class RobotContainer {
               () -> -controller.getLeftY(),
               () -> -controller.getLeftX(),
                     limelight))
-            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
+            .whileTrue(new ShooterCommands.Shoot(shooter,limelight,indexer));
   }
 
   /**
