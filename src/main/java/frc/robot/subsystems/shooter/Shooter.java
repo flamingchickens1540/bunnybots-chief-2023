@@ -5,7 +5,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
@@ -41,11 +40,14 @@ public class Shooter extends SubsystemBase {
     mainWheelIO.updateInputs(mainWheelInputs);
     secondaryWheelIO.updateInputs(secondaryWheelInputs);
     loadingWheelIO.updateInputs(loadingWheelInputs);
-    Logger.processInputs("Shooter/main", mainWheelInputs);
-    Logger.processInputs("Shooter/secondary", secondaryWheelInputs);
-    Logger.processInputs("Shooter/loading", loadingWheelInputs);
-    Logger.recordOutput("Shooter/mainSetpoint", mainSetpoint);
-    Logger.recordOutput("Shooter/secondarySetpoint", secondarySetpoint);
+    Logger.getInstance().processInputs("Shooter/main", mainWheelInputs);
+    Logger.getInstance().processInputs("Shooter/secondary", secondaryWheelInputs);
+    Logger.getInstance().processInputs("Shooter/loading", loadingWheelInputs);
+    Logger.getInstance().recordOutput("Shooter/mainSetpoint", mainSetpoint);
+    Logger.getInstance().recordOutput("Shooter/secondarySetpoint", secondarySetpoint);
+
+    Logger.getInstance().recordOutput("Shooter/mainVelocityRPM", getMainVelocityRPM());
+    Logger.getInstance().recordOutput("Shooter/secondaryVelocityRPM", getSecondaryVelocityRPM());
 
     if (TUNING) {
       if (kPMain.hasChanged() || kIMain.hasChanged() || kDMain.hasChanged()) {
@@ -107,12 +109,11 @@ public class Shooter extends SubsystemBase {
     return secondaryWheelInputs.velocityRadPerSec;
   }
 
-  @AutoLogOutput
+
   public double getMainVelocityRPM() {
     return Units.radiansPerSecondToRotationsPerMinute(mainWheelInputs.velocityRadPerSec);
   }
 
-  @AutoLogOutput
   public double getSecondaryVelocityRPM() {
     return Units.radiansPerSecondToRotationsPerMinute(secondaryWheelInputs.velocityRadPerSec);
   }

@@ -32,7 +32,7 @@ public class LimelightIOReal implements LimelightIO{
             LimelightHelpers.LimelightTarget_Detector target = limelightResults.targetingResults.targets_Detector[i];
             double[] temp = new double[]{target.classID, target.confidence, target.ta, target.tx, target.ty};
             inputs.allTargets[i] = temp;
-            if(target.classID == (DriverStation.getAlliance().get() == DriverStation.Alliance.Red?1.0:0)){
+            if(target.classID == (DriverStation.getAlliance() == DriverStation.Alliance.Red?1.0:0)){
                 validTargets.add(temp);
             }
         }

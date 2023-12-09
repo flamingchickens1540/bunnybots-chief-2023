@@ -15,6 +15,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.util.PolynomialRegression;
 import java.util.LinkedList;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class FeedForwardCharacterization extends Command {
+public class FeedForwardCharacterization extends CommandBase {
   private static final double START_DELAY_SECS = 2.0;
   private static final double RAMP_VOLTS_PER_SEC = 0.1;
 

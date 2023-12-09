@@ -2,7 +2,6 @@ package frc.robot.subsystems.limelight;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Limelight extends SubsystemBase {
@@ -23,8 +22,10 @@ public class Limelight extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs("Limelight", inputs);
+        Logger.getInstance().processInputs("Limelight", inputs);
         target = bestTargetMinDist();
+
+        Logger.getInstance().recordOutput("Limelight/targetDistance", getDistance());
     }
 
     public double getTa() {
@@ -43,7 +44,6 @@ public class Limelight extends SubsystemBase {
         return inputs.validTarget;
     }
 
-    @AutoLogOutput
     public double getDistance(){
         return (goalHeightInches - limelightLensHeightInches)/Math.tan(Math.toRadians(getTy() + mountingAngleDegrees));
     }

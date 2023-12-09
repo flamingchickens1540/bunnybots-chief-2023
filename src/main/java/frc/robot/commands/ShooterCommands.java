@@ -1,11 +1,12 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.shooter.Shooter;
 
 public class ShooterCommands {
-  public static class Shoot extends Command {
+  public static class Shoot extends CommandBase {
 
     Shooter shooter;
     double mainRPM;
@@ -62,7 +63,7 @@ public class ShooterCommands {
     }
   }
 
-  public static class ShooterIdle extends Command {
+  public static class ShooterIdle extends CommandBase {
     Shooter shooter;
 
     private final double mainIdleRPM = 8000;

@@ -56,7 +56,7 @@ public class DriveCommands {
           // Calcaulate new linear velocity
           Translation2d linearVelocity =
               new Pose2d(new Translation2d(), linearDirection)
-                  .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                  .transformBy(new Transform2d(new Translation2d(linearMagnitude, 0.0), new Rotation2d()))
                   .getTranslation();
 
           // Convert to field relative speeds & send command
@@ -91,7 +91,7 @@ public class DriveCommands {
                     // Calcaulate new linear velocity
                     Translation2d linearVelocity =
                             new Pose2d(new Translation2d(), linearDirection)
-                                    .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                                    .transformBy(new Transform2d(new Translation2d(linearMagnitude, 0.0), new Rotation2d()))
                                     .getTranslation();
 
                     // Convert to field relative speeds & send command

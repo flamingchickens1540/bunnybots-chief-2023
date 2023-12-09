@@ -28,11 +28,11 @@ public class LocalADStarAK implements Pathfinder {
    */
   @Override
   public boolean isNewPathAvailable() {
-    if (Logger.hasReplaySource()) {
+    if (Logger.getInstance().hasReplaySource()) {
       io.updateIsNewPathAvailable();
     }
 
-    Logger.processInputs("LocalADStarAK", io);
+    Logger.getInstance().processInputs("LocalADStarAK", io);
 
     return io.isNewPathAvailable;
   }
@@ -46,11 +46,11 @@ public class LocalADStarAK implements Pathfinder {
    */
   @Override
   public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goalEndState) {
-    if (Logger.hasReplaySource()) {
+    if (Logger.getInstance().hasReplaySource()) {
       io.updateCurrentPathPoints(constraints, goalEndState);
     }
 
-    Logger.processInputs("LocalADStarAK", io);
+    Logger.getInstance().processInputs("LocalADStarAK", io);
 
     if (io.currentPathPoints.isEmpty()) {
       return null;
@@ -67,7 +67,7 @@ public class LocalADStarAK implements Pathfinder {
    */
   @Override
   public void setStartPosition(Translation2d startPosition) {
-    if (Logger.hasReplaySource()) {
+    if (Logger.getInstance().hasReplaySource()) {
       io.adStar.setStartPosition(startPosition);
     }
   }
@@ -80,7 +80,7 @@ public class LocalADStarAK implements Pathfinder {
    */
   @Override
   public void setGoalPosition(Translation2d goalPosition) {
-    if (Logger.hasReplaySource()) {
+    if (Logger.getInstance().hasReplaySource()) {
       io.adStar.setGoalPosition(goalPosition);
     }
   }
@@ -121,9 +121,9 @@ public class LocalADStarAK implements Pathfinder {
 
     @Override
     public void fromLog(LogTable table) {
-      isNewPathAvailable = table.get("IsNewPathAvailable", false);
+      isNewPathAvailable = table.get("IsNewPathAvailable").getBoolean();
 
-      double[] pointsLogged = table.get("CurrentPathPoints", new double[0]);
+      double[] pointsLogged = table.get("CurrentPathPoints").getDoubleArray();
 
       List<PathPoint> pathPoints = new ArrayList<>();
       for (int i = 0; i < pointsLogged.length; i += 2) {

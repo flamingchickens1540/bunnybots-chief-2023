@@ -30,7 +30,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.LocalADStarAK;
-import org.littletonrobotics.junction.AutoLogOutput;
+import frc.robot.util.SwerveDriveKinematicsWrapper;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
@@ -45,7 +45,7 @@ public class Drive extends SubsystemBase {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
 
-  private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+  private SwerveDriveKinematicsWrapper kinematics = new SwerveDriveKinematicsWrapper(getModuleTranslations());
   private Pose2d pose = new Pose2d();
   private Rotation2d lastGyroRotation = new Rotation2d();
 
@@ -73,18 +73,18 @@ public class Drive extends SubsystemBase {
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
-          Logger.recordOutput(
+          Logger.getInstance().recordOutput(
               "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+          Logger.getInstance().recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
   }
 
   public void periodic() {
     gyroIO.updateInputs(gyroInputs);
-    Logger.processInputs("Drive/Gyro", gyroInputs);
+    Logger.getInstance().processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
       module.periodic();
     }
@@ -97,8 +97,8 @@ public class Drive extends SubsystemBase {
     }
     // Log empty setpoint states when disabled
     if (DriverStation.isDisabled()) {
-      Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+      Logger.getInstance().recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
+      Logger.getInstance().recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
     // Update odometry
@@ -115,8 +115,8 @@ public class Drive extends SubsystemBase {
       // with the change in angle since the last loop cycle.
       twist =
           new Twist2d(
-              twist.dx, twist.dy, gyroInputs.yawPosition.minus(lastGyroRotation).getRadians());
-      lastGyroRotation = gyroInputs.yawPosition;
+              twist.dx, twist.dy, Rotation2d.fromDegrees(gyroInputs.yawPosition).minus(lastGyroRotation).getRadians());
+      lastGyroRotation = Rotation2d.fromDegrees(gyroInputs.yawPosition);
     }
     // Apply the twist (change since last loop cycle) to the current pose
     pose = pose.exp(twist);
@@ -129,8 +129,10 @@ public class Drive extends SubsystemBase {
    */
   public void runVelocity(ChassisSpeeds speeds) {
     // Calculate module setpoints
-    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+//    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);// FIX PROBLEMS THIS MIGHT CAUSE
+    ChassisSpeeds discreteSpeeds = discretize(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+//    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);//Was a fix now resolved
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, MAX_LINEAR_SPEED);
 
     // Send setpoints to modules
@@ -141,8 +143,24 @@ public class Drive extends SubsystemBase {
     }
 
     // Log setpoint states
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedSetpointStates);
+    Logger.getInstance().recordOutput("SwerveStates/Setpoints", setpointStates);
+    Logger.getInstance().recordOutput("SwerveStates/SetpointsOptimized", optimizedSetpointStates);
+    Logger.getInstance().recordOutput("SwerveStates/Measured", getModuleStates());
+    Logger.getInstance().recordOutput("Odometry/Robot", getPose());
+
+  }
+  private static ChassisSpeeds discretize(
+          double vxMetersPerSecond,
+          double vyMetersPerSecond,
+          double omegaRadiansPerSecond,
+          double dtSeconds) {
+    var desiredDeltaPose =
+            new Pose2d(
+                    vxMetersPerSecond * dtSeconds,
+                    vyMetersPerSecond * dtSeconds,
+                    new Rotation2d(omegaRadiansPerSecond * dtSeconds));
+    var twist = new Pose2d().log(desiredDeltaPose);
+    return new ChassisSpeeds(twist.dx / dtSeconds, twist.dy / dtSeconds, twist.dtheta / dtSeconds);
   }
 
   /** Stops the drive. */
@@ -159,6 +177,7 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       headings[i] = getModuleTranslations()[i].getAngle();
     }
+//    if(headings.length != kinematics)
     kinematics.resetHeadings(headings);
     stop();
   }
@@ -180,7 +199,6 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the module states (turn angles and drive velocitoes) for all of the modules. */
-  @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
     for (int i = 0; i < 4; i++) {
@@ -190,7 +208,6 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
   public Pose2d getPose() {
     return pose;
   }
