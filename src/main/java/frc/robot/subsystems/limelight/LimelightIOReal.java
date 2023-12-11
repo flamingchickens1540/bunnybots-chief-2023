@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public class LimelightIOReal implements LimelightIO{
 
+    public double[][] allTargets = {};
+    public ArrayList<double[]> validTargets = new ArrayList<>();
+
     LimelightHelpers.LimelightResults limelightResults;
     public LimelightIOReal(){
         LimelightHelpers.setPipelineIndex("",9);
@@ -16,6 +19,7 @@ public class LimelightIOReal implements LimelightIO{
 
     @Override
     public void updateInputs(LimelightIOInputs inputs) {
+        validTargets.clear();
         limelightResults = LimelightHelpers.getLatestResults("");
         inputs.fullDump = limelightResults.toString();
         inputs.validTarget = limelightResults.targetingResults.valid;
@@ -26,16 +30,16 @@ public class LimelightIOReal implements LimelightIO{
         inputs.timestampMs = limelightResults.targetingResults.timestamp_RIOFPGA_capture;
         inputs.pipeline = limelightResults.targetingResults.pipelineID;
 
-        inputs.allTargets = new double[limelightResults.targetingResults.targets_Detector.length][];
-        ArrayList<double[]> validTargets = new ArrayList<>(inputs.allTargets.length);
-        for (int i = 0; i < inputs.allTargets.length; i += 1) {
+        allTargets = new double[limelightResults.targetingResults.targets_Detector.length][];
+        ArrayList<double[]> validTargets1 = new ArrayList<>(allTargets.length);
+        for (int i = 0; i < allTargets.length; i += 1) {
             LimelightHelpers.LimelightTarget_Detector target = limelightResults.targetingResults.targets_Detector[i];
             double[] temp = new double[]{target.classID, target.confidence, target.ta, target.tx, target.ty};
-            inputs.allTargets[i] = temp;
+            allTargets[i] = temp;
             if(target.classID == (DriverStation.getAlliance() == DriverStation.Alliance.Red?1.0:0)){
-                validTargets.add(temp);
+                validTargets1.add(temp);
             }
         }
-        inputs.validTargets = (double[][]) validTargets.toArray();
+        validTargets = validTargets1;
     }
 }

@@ -38,6 +38,7 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotInit() {
+    System.out.println("[Init] Recording metadata");
     Logger logger = Logger.getInstance();
     // Record metadata
     logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
@@ -56,7 +57,7 @@ public class Robot extends LoggedRobot {
         logger.recordMetadata("GitDirty", "Unknown");
         break;
     }
-
+    System.out.println("[Init] Configuring replay source");
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
       case REAL:
@@ -81,13 +82,15 @@ public class Robot extends LoggedRobot {
 
     // See http://bit.ly/3YIzFZ6 for more information on timestamps in AdvantageKit.
     // Logger.disableDeterministicTimestamps()
-
+    System.out.println("[Init] Starting AdvantageKit");
     // Start AdvantageKit logger
     Logger.getInstance().start();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
+    System.out.println("[Init] Creating RobotContainer");
     robotContainer = new RobotContainer();
+    System.out.println("[Init] Done Creating RobotContainer");
   }
 
   /** This function is called periodically during all modes. */

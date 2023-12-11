@@ -5,6 +5,8 @@ import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 public interface LimelightIO {
+    public double[][] allTargets = {};
+    public double[][] validTargets = {};
 
     @AutoLog
     public static class LimelightIOInputs{
@@ -18,8 +20,8 @@ public interface LimelightIO {
         public double timestampMs = 0.0;
         public double pipeline = 0;
 
-        public double[][] allTargets = {};
-        public double[][] validTargets = {};
+//        public double[][] allTargets = {};
+//        public double[][] validTargets = {};
     }
 
     public default void updateInputs(LimelightIOInputs inputs) {}

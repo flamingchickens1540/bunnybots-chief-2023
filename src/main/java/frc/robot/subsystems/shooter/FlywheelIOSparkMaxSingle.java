@@ -24,12 +24,17 @@ import edu.wpi.first.math.util.Units;
 public class FlywheelIOSparkMaxSingle implements FlywheelIO {
   private final double GEAR_RATIO;
 
-  private final CANSparkMax spark = new CANSparkMax(0, MotorType.kBrushless);
+  private final CANSparkMax spark;
   ;
-  private final RelativeEncoder encoder = spark.getEncoder();
-  private final SparkMaxPIDController pid = spark.getPIDController();
+  private final RelativeEncoder encoder;
+  private final SparkMaxPIDController pid;
 
-  public FlywheelIOSparkMaxSingle(double gearing) {
+  public FlywheelIOSparkMaxSingle(double gearing, int id) {
+     spark = new CANSparkMax(id, MotorType.kBrushless);
+     encoder = spark.getEncoder();
+     pid = spark.getPIDController();
+
+
     GEAR_RATIO = gearing;
 
     spark.restoreFactoryDefaults();

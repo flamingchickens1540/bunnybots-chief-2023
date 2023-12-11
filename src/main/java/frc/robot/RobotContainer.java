@@ -41,7 +41,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final Flywheel flywheel;
   private final Shooter shooter;
 
   private final Limelight limelight;
@@ -51,27 +50,25 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
-  private final LoggedDashboardNumber flywheelSpeedInput =
-      new LoggedDashboardNumber("Flywheel Speed", 1500.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFX(0, 3),
-                new ModuleIOTalonFX(1, 4),
-                new ModuleIOTalonFX(2, 7),
-                new ModuleIOTalonFX(3, 1));
-        flywheel = new Flywheel(new FlywheelIOSparkMax());
+//        drive =
+//            new Drive(
+//                new GyroIONavx(),
+//                new ModuleIOTalonFX(0, 3),
+//                new ModuleIOTalonFX(1, 4),
+//                new ModuleIOTalonFX(2, 7),
+//                new ModuleIOTalonFX(3, 1));
+        drive = null;
         shooter =
             new Shooter(
                 new FlywheelIOTalonFX(),
-                new FlywheelIOSparkMaxSingle(1),
-                new FlywheelIOSparkMaxSingle(10));
+                new FlywheelIOSparkMaxSingle(1,13),
+                new FlywheelIOSparkMaxSingle(10,14));
         limelight = new Limelight(new LimelightIOReal());
         // drive = new Drive(
         // new GyroIOPigeon2(),
@@ -79,7 +76,6 @@ public class RobotContainer {
         // new ModuleIOTalonFX(1),
         // new ModuleIOTalonFX(2),
         // new ModuleIOTalonFX(3));
-        // flywheel = new Flywheel(new FlywheelIOTalonFX());
         break;
 
       case SIM:
@@ -91,7 +87,6 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        flywheel = new Flywheel(new FlywheelIOSim());
         shooter = null;
         limelight = null;
         break;
@@ -105,30 +100,22 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {});
         shooter = null;
         limelight = null;
         break;
     }
 
     // Set up named commands for PathPlanner
-    NamedCommands.registerCommand(
-        "Run Flywheel",
-        Commands.startEnd(
-            () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
     // Set up FF characterization routines
-    autoChooser.addOption(
-        "Drive FF Characterization",
-        new FeedForwardCharacterization(
-            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
-    autoChooser.addOption(
-        "Flywheel FF Characterization",
-        new FeedForwardCharacterization(
-            flywheel, flywheel::runCharacterizationVolts, flywheel::getCharacterizationVelocity));
+//    autoChooser.addOption(
+//        "Drive FF Characterization",
+//        new FeedForwardCharacterization(
+//            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
+
     autoChooser.addOption(
         "Shooter Main FF Characterization",
         new FeedForwardCharacterization(
@@ -153,36 +140,32 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+//    drive.setDefaultCommand(
+//        DriveCommands.joystickDrive(
+//            drive,
+//            () -> -controller.getLeftY(),
+//            () -> -controller.getLeftX(),
+//            () -> -controller.getRightX()));
 
     shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
-    controller
-        .a()
-        .whileTrue(
-            Commands.startEnd(
-                () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-    controller.x()
-            .whileTrue(DriveCommands.LimelightRotDrive(
-              drive,
-              () -> -controller.getLeftY(),
-              () -> -controller.getLeftX(),
-                    limelight))
-            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
+//    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+//    controller
+//        .b()
+//        .onTrue(
+//            Commands.runOnce(
+//                    () ->
+//                        drive.setPose(
+//                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+//                    drive)
+//                .ignoringDisable(true));
+
+//    controller.x()
+//            .whileTrue(DriveCommands.LimelightRotDrive(
+//              drive,
+//              () -> -controller.getLeftY(),
+//              () -> -controller.getLeftX(),
+//                    limelight))
+//            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
   }
 
   /**

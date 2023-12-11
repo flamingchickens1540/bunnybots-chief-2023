@@ -177,7 +177,6 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       headings[i] = getModuleTranslations()[i].getAngle();
     }
-//    if(headings.length != kinematics)
     kinematics.resetHeadings(headings);
     stop();
   }

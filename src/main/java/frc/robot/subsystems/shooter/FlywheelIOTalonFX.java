@@ -27,12 +27,13 @@ import edu.wpi.first.math.util.Units;
 public class FlywheelIOTalonFX implements FlywheelIO {
   private static final double GEAR_RATIO = 22 / 16;
 
-  private final TalonFX leader = new TalonFX(0);
-  private final TalonFX follower = new TalonFX(1);
+  private final TalonFX leader = new TalonFX(11);
+  private final TalonFX follower = new TalonFX(12);
 
   private final StatusSignal<Double> leaderPosition = leader.getPosition();
   private final StatusSignal<Double> leaderVelocity = leader.getVelocity();
-  private final StatusSignal<Double> leaderAppliedVolts = leader.getMotorVoltage();
+  private final StatusSignal<Double> leaderDutyCycle = leader.getDutyCycle();
+  private final StatusSignal<Double> leaderSupplyVoltage =  leader.getSupplyVoltage();
   private final StatusSignal<Double> leaderCurrent = leader.getStatorCurrent();
   private final StatusSignal<Double> followerCurrent = follower.getStatorCurrent();
 
@@ -45,22 +46,31 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     follower.getConfigurator().apply(config);
     follower.setControl(new Follower(leader.getDeviceID(), false));
 
-    BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, leaderPosition, leaderVelocity, leaderAppliedVolts, leaderCurrent, followerCurrent);
-    leader.optimizeBusUtilization();
-    follower.optimizeBusUtilization();
+    leaderPosition.setUpdateFrequency(50.0);
+    leaderVelocity.setUpdateFrequency(50.0);
+    leaderSupplyVoltage.setUpdateFrequency(50.0);
+    leaderDutyCycle.setUpdateFrequency(50.0);
+    leaderCurrent.setUpdateFrequency(50.0);
+    followerCurrent.setUpdateFrequency(50.0);
+//    leader.optimizeBusUtilization();
+//    follower.optimizeBusUtilization();
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    BaseStatusSignal.refreshAll(
-        leaderPosition, leaderVelocity, leaderAppliedVolts, leaderCurrent, followerCurrent);
-    inputs.positionRad = Units.rotationsToRadians(leaderPosition.getValueAsDouble()) / GEAR_RATIO;
+    leaderPosition.refresh();
+    leaderVelocity.refresh();
+    leaderSupplyVoltage.refresh();
+    leaderDutyCycle.refresh();
+    leaderCurrent.refresh();
+    followerCurrent.refresh();
+
+    inputs.positionRad = Units.rotationsToRadians(leaderPosition.getValue()) / GEAR_RATIO;
     inputs.velocityRadPerSec =
-        Units.rotationsToRadians(leaderVelocity.getValueAsDouble()) / GEAR_RATIO;
-    inputs.appliedVolts = leaderAppliedVolts.getValueAsDouble();
+        Units.rotationsToRadians(leaderVelocity.getValue()) / GEAR_RATIO;
+    inputs.appliedVolts = leaderSupplyVoltage.getValue() * leaderDutyCycle.getValue();
     inputs.currentAmps =
-        new double[] {leaderCurrent.getValueAsDouble(), followerCurrent.getValueAsDouble()};
+        new double[] {leaderCurrent.getValue(), followerCurrent.getValue()};
   }
 
   @Override
@@ -72,7 +82,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   public void setVelocity(double velocityRadPerSec, double ffVolts) {
     leader.setControl(
         new VelocityVoltage(
-            Units.radiansToRotations(velocityRadPerSec), 0.0, true, ffVolts, 0, false));
+            Units.radiansToRotations(velocityRadPerSec), true, ffVolts, 0, false));
   }
 
   @Override

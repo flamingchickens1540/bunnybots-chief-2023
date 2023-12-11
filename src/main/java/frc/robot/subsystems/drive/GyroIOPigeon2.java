@@ -20,6 +20,8 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 
 /** IO implementation for Pigeon2 */
 public class GyroIOPigeon2 implements GyroIO {
@@ -32,13 +34,14 @@ public class GyroIOPigeon2 implements GyroIO {
     pigeon.getConfigurator().setYaw(0.0);
     yaw.setUpdateFrequency(100.0);
     yawVelocity.setUpdateFrequency(100.0);
-    pigeon.optimizeBusUtilization();
+//    pigeon.optimizeBusUtilization();
   }
 
   @Override
   public void updateInputs(GyroIOInputs inputs) {
-    inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
-    inputs.yawPosition = -yaw.getValueAsDouble();
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+    inputs.connected = StatusCode.OK.equals(yaw.refresh()) && StatusCode.OK.equals(yawVelocity.refresh());
+    inputs.yawPosition = -yaw.getValue();
+    inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValue());
+    inputs.time = Timer.getFPGATimestamp();
   }
 }

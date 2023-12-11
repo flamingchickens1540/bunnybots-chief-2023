@@ -23,7 +23,7 @@ public class Limelight extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("Limelight", inputs);
-        target = bestTargetMinDist();
+        if(getTv()) target = bestTargetMinDist();
 
         Logger.getInstance().recordOutput("Limelight/targetDistance", getDistance());
     }
@@ -33,11 +33,13 @@ public class Limelight extends SubsystemBase {
     }
 
     public double getTx() {
-        return target[3];
+        if(getTv()) return target[3];
+        return 0;
     }
 
     public double getTy() {
-        return target[4];
+        if(getTv()) return target[4];
+        return 0;
     }
 
     public boolean getTv() {
@@ -45,20 +47,22 @@ public class Limelight extends SubsystemBase {
     }
 
     public double getDistance(){
-        return (goalHeightInches - limelightLensHeightInches)/Math.tan(Math.toRadians(getTy() + mountingAngleDegrees));
+        if(getTv()) return (goalHeightInches - limelightLensHeightInches)/Math.tan(Math.toRadians(getTy() + mountingAngleDegrees));
+        return 0;
     }
     public double getDistance(double[] target){
-        return (goalHeightInches - limelightLensHeightInches)/Math.tan(Math.toRadians(target[4] + mountingAngleDegrees));
+        if(getTv()) return (goalHeightInches - limelightLensHeightInches)/Math.tan(Math.toRadians(target[4] + mountingAngleDegrees));
+        return 0;
     }
 
     private double[] bestTargetMinDist(){
-        if (!inputs.validTarget) return null;
-        double[] minTarget = inputs.validTargets[0];
+        if (!getTv()) return null;
+        double[] minTarget = io.validTargets[0];
         double min = getDistance(minTarget);
-        for (int i = 1; i < inputs.validTargets.length; i++) {
-            if(getDistance(inputs.validTargets[i]) < min){
-                min = getDistance(inputs.validTargets[i]);
-                minTarget = inputs.validTargets[i];
+        for (int i = 1; i < io.validTargets.length; i++) {
+            if(getDistance(io.validTargets[i]) < min){
+                min = getDistance(io.validTargets[i]);
+                minTarget = io.validTargets[i];
             }
         }
         return minTarget;
