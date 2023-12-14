@@ -68,7 +68,7 @@ public class ModuleIOTalonFX implements ModuleIO {
       driveTalon = new TalonFX(moduleNumber + 30, "swerve");
       turnTalon = new TalonFX(moduleNumber + 20, "swerve");
       cancoder = new CANcoder(moduleNumber + 10, "swerve");
-      absoluteEncoderOffset = new Rotation2d((Constants.Drivetrain.cornerOffsets[index] + Constants.Drivetrain.offsets[moduleNumber])%360); // MUST BE CALIBRATED
+      absoluteEncoderOffset = Rotation2d.fromDegrees((Constants.Drivetrain.cornerOffsets[index] + Constants.Drivetrain.offsets[moduleNumber-1]) % 360); // MUST BE CALIBRATED
 
     var driveConfig = new TalonFXConfiguration();
     driveConfig.CurrentLimits.StatorCurrentLimit = 40.0;

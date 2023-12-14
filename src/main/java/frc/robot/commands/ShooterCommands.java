@@ -1,9 +1,10 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.subsystems.IndexTemp;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.shooter.Shooter;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 public class ShooterCommands {
   public static class Shoot extends CommandBase {
@@ -66,9 +67,9 @@ public class ShooterCommands {
   public static class ShooterIdle extends CommandBase {
     Shooter shooter;
 
-    private final double mainIdleRPM = 8000;
-    private final double secondaryIdleRPM = 4000;
-    private final double loadingIdleVoltage = -8;
+    private final double mainIdleRPM = 4000;
+    private final double secondaryIdleRPM = 0;
+    private final double loadingIdleVoltage = 0;
 
     public ShooterIdle(Shooter shooter) {
       this.shooter = shooter;
@@ -80,6 +81,34 @@ public class ShooterCommands {
       shooter.setMainVelocity(mainIdleRPM);
       shooter.setSecondaryVelocity(secondaryIdleRPM);
       shooter.setLoadingVoltage(loadingIdleVoltage);
+    }
+  }
+
+  public static class ShooterTesting extends CommandBase{
+    Shooter shooter;
+    LoggedDashboardNumber mainRPM = new LoggedDashboardNumber("mainRPM", 0);
+    LoggedDashboardNumber secondaryRPM = new LoggedDashboardNumber("secondaryRPM", 0);
+    
+    LoggedDashboardNumber loadingVoltage = new LoggedDashboardNumber("loadingVoltage",0);
+    LoggedDashboardNumber indexPercent = new LoggedDashboardNumber("indexPercent",0);
+    IndexTemp index = new IndexTemp();
+    public ShooterTesting(Shooter shooter) {
+      this.shooter = shooter;
+      addRequirements(shooter);
+    }
+
+    @Override
+    public void execute() {
+      shooter.setMainVelocity(mainRPM.get());
+      shooter.setSecondaryVelocity(secondaryRPM.get());
+      shooter.setLoadingVoltage(loadingVoltage.get());
+      index.setPercent(indexPercent.get());
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      shooter.stopAll();
+      index.setPercent(0);
     }
   }
 }

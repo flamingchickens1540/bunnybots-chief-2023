@@ -14,13 +14,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.limelight.Limelight;
 
@@ -28,6 +28,7 @@ import java.util.function.DoubleSupplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
+  private static PIDController pid = new PIDController(0,0,0);
 
   private DriveCommands() {}
 
@@ -77,6 +78,7 @@ public class DriveCommands {
             Limelight limelight) {
         return Commands.run(
                 () -> {
+
                     // Apply deadband
                     double linearMagnitude =
                             MathUtil.applyDeadband(
@@ -99,9 +101,23 @@ public class DriveCommands {
                             ChassisSpeeds.fromFieldRelativeSpeeds(
                                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    omega * drive.getMaxAngularSpeedRadPerSec(),
+                                    pid.calculate(omega, 0) * drive.getMaxAngularSpeedRadPerSec(),
+//                                    omega * drive.getMaxAngularSpeedRadPerSec(),
+
                                     drive.getRotation()));
                 },
                 drive);
+    }
+
+    public static class JustinCase extends SequentialCommandGroup {
+        public JustinCase(Drive drive){
+            addCommands(
+                    new ParallelRaceGroup(
+                            new WaitCommand(1),
+                            joystickDrive(drive, () -> 0.0, () -> 0.5, () -> 0.0)
+                    ),
+                    joystickDrive(drive, () -> 0.0, () -> 0.0, () -> 0.0)
+            );
+        }
     }
 }

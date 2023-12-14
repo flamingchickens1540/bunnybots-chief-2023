@@ -20,11 +20,12 @@ public class Shooter extends SubsystemBase {
   private final LoggedTunableNumber kIMain = new LoggedTunableNumber("Shooter/kIMain", 0);
   private final LoggedTunableNumber kDMain = new LoggedTunableNumber("Shooter/kDMain", 0);
 
-  private final SimpleMotorFeedforward mainff = new SimpleMotorFeedforward(0.1, 0.5);
+  private final SimpleMotorFeedforward mainff = new SimpleMotorFeedforward(0.05470, 0.01792);
 
   private final LoggedTunableNumber kPSecondary = new LoggedTunableNumber("Shooter/kPSecondary", 0);
   private final LoggedTunableNumber kISecondary = new LoggedTunableNumber("Shooter/kISecondary", 0);
   private final LoggedTunableNumber kDSecondary = new LoggedTunableNumber("Shooter/kDSecondary", 0);
+  private final SimpleMotorFeedforward secondaryff = new SimpleMotorFeedforward(0.01093, 0.01857);
 
   private double mainSetpoint = 0;
   private double secondarySetpoint = 0;
@@ -43,9 +44,10 @@ public class Shooter extends SubsystemBase {
     Logger.getInstance().processInputs("Shooter/main", mainWheelInputs);
     Logger.getInstance().processInputs("Shooter/secondary", secondaryWheelInputs);
     Logger.getInstance().processInputs("Shooter/loading", loadingWheelInputs);
+
+
     Logger.getInstance().recordOutput("Shooter/mainSetpoint", mainSetpoint);
     Logger.getInstance().recordOutput("Shooter/secondarySetpoint", secondarySetpoint);
-
     Logger.getInstance().recordOutput("Shooter/mainVelocityRPM", getMainVelocityRPM());
     Logger.getInstance().recordOutput("Shooter/secondaryVelocityRPM", getSecondaryVelocityRPM());
 
@@ -53,8 +55,8 @@ public class Shooter extends SubsystemBase {
       if (kPMain.hasChanged() || kIMain.hasChanged() || kDMain.hasChanged()) {
         mainWheelIO.configurePID(kPMain.get(), kIMain.get(), kDMain.get());
       }
-      if (kDSecondary.hasChanged() || kDSecondary.hasChanged() || kDSecondary.hasChanged()) {
-        mainWheelIO.configurePID(kDSecondary.get(), kDSecondary.get(), kDSecondary.get());
+      if (kPSecondary.hasChanged() || kISecondary.hasChanged() || kDSecondary.hasChanged()) {
+        mainWheelIO.configurePID(kPSecondary.get(), kISecondary.get(), kDSecondary.get());
       }
     }
   }
@@ -68,7 +70,7 @@ public class Shooter extends SubsystemBase {
   public void setSecondaryVelocity(double RPM) {
     double rpmRadSec = Units.rotationsPerMinuteToRadiansPerSecond(RPM);
     secondarySetpoint = RPM;
-    secondaryWheelIO.setVelocity(rpmRadSec, mainff.calculate(rpmRadSec));
+    secondaryWheelIO.setVelocity(rpmRadSec, secondaryff.calculate(rpmRadSec));
   }
 
   public void setMainVoltage(double volts) {

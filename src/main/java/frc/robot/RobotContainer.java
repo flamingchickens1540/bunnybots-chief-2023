@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
@@ -54,80 +55,64 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
-      case REAL:
+      case REAL: {
         // Real robot, instantiate hardware IO implementations
-//        drive =
-//            new Drive(
-//                new GyroIONavx(),
-//                new ModuleIOTalonFX(0, 3),
-//                new ModuleIOTalonFX(1, 4),
-//                new ModuleIOTalonFX(2, 7),
-//                new ModuleIOTalonFX(3, 1));
-        drive = null;
+        drive =
+                new Drive(
+                        new GyroIONavx(),
+                        new ModuleIOTalonFX(0, 3),
+                        new ModuleIOTalonFX(1, 4),
+                        new ModuleIOTalonFX(2, 7),
+                        new ModuleIOTalonFX(3, 1));
+//        drive = null;
         shooter =
-            new Shooter(
-                new FlywheelIOTalonFX(),
-                new FlywheelIOSparkMaxSingle(1,13),
-                new FlywheelIOSparkMaxSingle(10,14));
+                new Shooter(
+                        new FlywheelIOTalonFX(),
+                        new FlywheelIOSparkMaxSingle(1, 13, false, 20),
+                        new FlywheelIOSparkMaxSingle(10, 14, true, 40));
         limelight = new Limelight(new LimelightIOReal());
-        // drive = new Drive(
-        // new GyroIOPigeon2(),
-        // new ModuleIOTalonFX(0),
-        // new ModuleIOTalonFX(1),
-        // new ModuleIOTalonFX(2),
-        // new ModuleIOTalonFX(3));
         break;
+      }
 
-      case SIM:
+      case SIM: {
+
         // Sim robot, instantiate physics sim IO implementations
         drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(),
-                new ModuleIOSim(),
-                new ModuleIOSim(),
-                new ModuleIOSim());
+                new Drive(
+                        new GyroIO() {
+                        },
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim());
         shooter = null;
         limelight = null;
         break;
+      }
 
-      default:
+      default: {
         // Replayed robot, disable IO implementations
         drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
+                new Drive(
+                        new GyroIO() {
+                        },
+                        new ModuleIO() {
+                        },
+                        new ModuleIO() {
+                        },
+                        new ModuleIO() {
+                        },
+                        new ModuleIO() {
+                        });
         shooter = null;
         limelight = null;
         break;
+      }
     }
-
-    // Set up named commands for PathPlanner
-
-    // Set up auto routines
+//     Set up named commands for PathPlanner
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
+    configureAutoChooser();
 
-    // Set up FF characterization routines
-//    autoChooser.addOption(
-//        "Drive FF Characterization",
-//        new FeedForwardCharacterization(
-//            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
-
-    autoChooser.addOption(
-        "Shooter Main FF Characterization",
-        new FeedForwardCharacterization(
-            shooter,
-            shooter::runMainCharacterizationVolts,
-            shooter::getMainCharacterizationVelocity));
-    autoChooser.addOption(
-        "Shooter Secondary FF Characterization",
-        new FeedForwardCharacterization(
-            shooter,
-            shooter::runSecondaryCharacterizationVolts,
-            shooter::getSecondaryCharacterizationVelocity));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -140,15 +125,17 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-//    drive.setDefaultCommand(
-//        DriveCommands.joystickDrive(
-//            drive,
-//            () -> -controller.getLeftY(),
-//            () -> -controller.getLeftX(),
-//            () -> -controller.getRightX()));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -controller.getLeftX(),
+            () -> controller.getLeftY(),
+            () -> -controller.getRightX()));
 
-    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
-//    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+//    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
+      shooter.setDefaultCommand(new ShooterCommands.ShooterTesting(shooter));
+    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller.y().onTrue(new InstantCommand(() -> drive.resetPose()));
 //    controller
 //        .b()
 //        .onTrue(
@@ -159,13 +146,40 @@ public class RobotContainer {
 //                    drive)
 //                .ignoringDisable(true));
 
-//    controller.x()
-//            .whileTrue(DriveCommands.LimelightRotDrive(
-//              drive,
-//              () -> -controller.getLeftY(),
-//              () -> -controller.getLeftX(),
-//                    limelight))
+    controller.a()
+            .whileTrue(DriveCommands.LimelightRotDrive(
+              drive,
+              () -> -controller.getLeftX(),
+              () -> controller.getLeftY(),
+                    limelight));
 //            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
+//    controller.x().whileTrue(new ShooterCommands.ShooterTesting(shooter));
+  }
+
+  private void configureAutoChooser(){
+    // Set up auto routines
+
+    // Set up FF characterization routines
+    autoChooser.addOption(
+        "Drive FF Characterization",
+        new FeedForwardCharacterization(
+            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
+
+    autoChooser.addOption(
+            "Shooter Main FF Characterization",
+            new FeedForwardCharacterization(
+                    shooter,
+                    shooter::runMainCharacterizationVolts,
+                    shooter::getMainCharacterizationVelocity));
+    autoChooser.addOption(
+            "Shooter Secondary FF Characterization",
+            new FeedForwardCharacterization(
+                    shooter,
+                    shooter::runSecondaryCharacterizationVolts,
+                    shooter::getSecondaryCharacterizationVelocity));
+    autoChooser.addOption(
+            "Justin Case",
+            new DriveCommands.JustinCase(drive));
   }
 
   /**

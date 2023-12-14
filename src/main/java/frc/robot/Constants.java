@@ -37,13 +37,17 @@ public final class Constants {
 
   public static class Drivetrain{
     public static final double[] offsets = new double[]{
-            75.469, // Module 1
+//            .917725 * 360, // Module 1
+            75.469 + 108 - 180 - 3 - 27 + 90,
             91.318 - 90,  // Module 2
-            256.729 + 3, // Module 3
-            9.0,     // Module 4
+//            .224365 * 360, // Module 3
+            259.729 + 30 - 180 - 1 -27 + 90,
+//            .022949 * 360,     // Module 4
+            9.0 + 30 -27 + 90,
             239.766, // Module 5
             32.08,  // Module 6
-            27.861, // Module 7
+//            -.423096 * 360, // Module 7
+            27.861 + 120 - 27 + 90,
             105.011 + 3  // Module 8
     };
 

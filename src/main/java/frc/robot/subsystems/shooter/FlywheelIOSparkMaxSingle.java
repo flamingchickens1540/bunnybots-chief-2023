@@ -29,7 +29,7 @@ public class FlywheelIOSparkMaxSingle implements FlywheelIO {
   private final RelativeEncoder encoder;
   private final SparkMaxPIDController pid;
 
-  public FlywheelIOSparkMaxSingle(double gearing, int id) {
+  public FlywheelIOSparkMaxSingle(double gearing, int id, boolean inversion, double currentLimit) {
      spark = new CANSparkMax(id, MotorType.kBrushless);
      encoder = spark.getEncoder();
      pid = spark.getPIDController();
@@ -41,10 +41,10 @@ public class FlywheelIOSparkMaxSingle implements FlywheelIO {
 
     spark.setCANTimeout(250);
 
-    spark.setInverted(false);
+    spark.setInverted(inversion);
 
     spark.enableVoltageCompensation(12.0);
-    spark.setSmartCurrentLimit(30);
+    spark.setSmartCurrentLimit(currentLimit);
 
     spark.burnFlash();
   }
