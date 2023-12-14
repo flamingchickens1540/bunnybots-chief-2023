@@ -29,7 +29,7 @@ public class FlywheelIOSparkMaxSingle implements FlywheelIO {
   private final RelativeEncoder encoder;
   private final SparkMaxPIDController pid;
 
-  public FlywheelIOSparkMaxSingle(double gearing, int id, boolean inversion, double currentLimit) {
+  public FlywheelIOSparkMaxSingle(double gearing, int id, boolean inversion, int currentLimit) {
      spark = new CANSparkMax(id, MotorType.kBrushless);
      encoder = spark.getEncoder();
      pid = spark.getPIDController();
