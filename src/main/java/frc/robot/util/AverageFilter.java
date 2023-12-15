@@ -31,4 +31,11 @@ public class AverageFilter {
   public double getAverage() {
     return sum / (double) items.size();
   }
+
+  public boolean atSetpoint(double setpoint, double low, double high){
+    return getAverage() > setpoint - low && getAverage() < setpoint + high;
+  }
+  public boolean atSetpoint(double setpoint, double variance){
+    return atSetpoint(setpoint, variance, variance);
+  }
 }

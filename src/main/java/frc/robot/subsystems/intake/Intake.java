@@ -19,7 +19,7 @@ public class Intake extends SubsystemBase {
 
   private final LoggedTunableNumber kPFollow = new LoggedTunableNumber("Intake/kPFollow", 0.045);
   private final LoggedTunableNumber kIFollow = new LoggedTunableNumber("Intake/kIFollow", 0);
-  private final LoggedTunableNumber kDFollow = new LoggedTunableNumber("Intake/kDFollow", 3);
+  private final LoggedTunableNumber kDFollow = new LoggedTunableNumber("Intake/kDFollow", 4);
 
 //  private final ArmFeedforward ff = new ArmFeedforward()
 

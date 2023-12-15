@@ -13,28 +13,21 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
-import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
+import frc.robot.subsystems.IndexCommand;
+import frc.robot.subsystems.IndexTemp;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.shooter.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -49,15 +42,18 @@ public class RobotContainer {
 
   private final Limelight limelight;
   private final Intake intake;
+  private final IndexTemp index;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandXboxController copilot = new CommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    index = new IndexTemp();
     switch (Constants.currentMode) {
       case REAL: {
         // Real robot, instantiate hardware IO implementations
@@ -73,10 +69,11 @@ public class RobotContainer {
                 new Shooter(
                         new FlywheelIOTalonFX(),
                         new FlywheelIOSparkMaxSingle(1, 13, false, 20),
-                        new FlywheelIOSparkMaxSingle(1.0/10.0, 14, true, 40));
+                        new FlywheelIOSparkMaxSingle(1.0/10.0, 14, false, 40));
         limelight = new Limelight(new LimelightIOReal());
 //        limelight = null;
-        intake = new Intake(new IntakeIOReal());
+//        intake = new Intake(new IntakeIOReal());
+        intake = null;
         break;
       }
 
@@ -140,9 +137,11 @@ public class RobotContainer {
             () -> controller.getLeftY(),
             () -> -controller.getRightX()));
 
-//    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
-      shooter.setDefaultCommand(new ShooterCommands.ShooterTesting(shooter));
-      intake.setDefaultCommand(new IntakeCommands.IntakeTesting(intake));
+    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
+//      shooter.setDefaultCommand(new ShooterCommands.ShooterTesting(shooter));
+//      intake.setDefaultCommand(new IntakeCommands.IntakeTesting(intake));
+    index.setDefaultCommand(new IndexCommand(index));
+
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     controller.y().onTrue(new InstantCommand(() -> drive.resetPose()));
 //    controller
@@ -155,16 +154,20 @@ public class RobotContainer {
 //                    drive)
 //                .ignoringDisable(true));
 
-    controller.a().onTrue(new IntakeCommands.IntakeDown(intake));
-    controller.b().onTrue(new IntakeCommands.IntakeUp(intake));
+//    controller.
+//        a().
+//          onTrue(new IntakeCommands.IntakeDown(intake));
+//          onFalse(new IntakeCommands.IntakeUp(intake));
 
-    controller.rightTrigger(0.7)
+    copilot
+//    controller
+            .rightTrigger(0.7)
             .whileTrue(DriveCommands.LimelightRotDrive(
               drive,
               () -> -controller.getLeftX(),
               () -> controller.getLeftY(),
-                    limelight));
-//            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
+                    limelight))
+            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
 //    controller.x().whileTrue(new ShooterCommands.ShooterTesting(shooter));
   }
 
@@ -200,6 +203,10 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return new SequentialCommandGroup(
+            new InstantCommand(() -> drive.resetPose()),
+//            new IntakeCommands.IntakeUp(intake),
+            autoChooser.get()
+    );
   }
 }

@@ -17,3 +17,4 @@ public class IndexTemp extends SubsystemBase {
         Logger.getInstance().recordOutput("Indexer/outputCurrent", spark.getOutputCurrent());
     }
 }
+

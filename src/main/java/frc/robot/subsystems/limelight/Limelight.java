@@ -12,8 +12,8 @@ public class Limelight extends SubsystemBase {
     private double[] target;
 
     private final double mountingAngleDegrees = 10.0;
-    private final double limelightLensHeightInches = 20.0;//TODO Find this
-    private final double goalHeightInches = 25.0;//TODO Find this
+    private final double limelightLensHeightInches = 34.0;
+    private final double goalHeightInches = 42 + 7.5;
     private static  double HORIZONTAL_FOV = Math.toRadians(63.3);
     private static  double VERTICAL_FOV = Math.toRadians(49.7);
 

@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.AverageFilter;
 import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
@@ -30,6 +31,8 @@ public class Shooter extends SubsystemBase {
   private double mainSetpoint = 0;
   private double secondarySetpoint = 0;
 
+  private AverageFilter mainFilter = new AverageFilter(5);
+  private AverageFilter secondaryFilter = new AverageFilter(5);
   public Shooter(FlywheelIO mainWheelIO, FlywheelIO secondaryWheelIO, FlywheelIO loadingWheelIO) {
     this.mainWheelIO = mainWheelIO;
     this.secondaryWheelIO = secondaryWheelIO;
@@ -41,6 +44,10 @@ public class Shooter extends SubsystemBase {
     mainWheelIO.updateInputs(mainWheelInputs);
     secondaryWheelIO.updateInputs(secondaryWheelInputs);
     loadingWheelIO.updateInputs(loadingWheelInputs);
+
+    mainFilter.add(getMainVelocityRPM());
+    secondaryFilter.add(getSecondaryVelocityRPM());
+
     Logger.getInstance().processInputs("Shooter/main", mainWheelInputs);
     Logger.getInstance().processInputs("Shooter/secondary", secondaryWheelInputs);
     Logger.getInstance().processInputs("Shooter/loading", loadingWheelInputs);
@@ -50,6 +57,8 @@ public class Shooter extends SubsystemBase {
     Logger.getInstance().recordOutput("Shooter/secondarySetpoint", secondarySetpoint);
     Logger.getInstance().recordOutput("Shooter/mainVelocityRPM", getMainVelocityRPM());
     Logger.getInstance().recordOutput("Shooter/secondaryVelocityRPM", getSecondaryVelocityRPM());
+    Logger.getInstance().recordOutput("Shooter/mainAverageVelocityRPM", mainFilter.getAverage());
+    Logger.getInstance().recordOutput("Shooter/secondaryAverageVelocityRPM", secondaryFilter.getAverage());
 
     if (TUNING) {
       if (kPMain.hasChanged() || kIMain.hasChanged() || kDMain.hasChanged()) {
@@ -59,6 +68,8 @@ public class Shooter extends SubsystemBase {
         mainWheelIO.configurePID(kPSecondary.get(), kISecondary.get(), kDSecondary.get());
       }
     }
+
+
   }
 
   public void setMainVelocity(double RPM) {
@@ -119,4 +130,15 @@ public class Shooter extends SubsystemBase {
   public double getSecondaryVelocityRPM() {
     return Units.radiansPerSecondToRotationsPerMinute(secondaryWheelInputs.velocityRadPerSec);
   }
+
+  public boolean mainAtSetpoint(){
+    return mainFilter.atSetpoint(mainSetpoint, 50);
+  }
+  public boolean secondaryAtSetpoint(){
+    return secondaryFilter.atSetpoint(secondarySetpoint, 50);
+  }
+  public boolean atSetpoints(){
+    return mainAtSetpoint() && secondaryAtSetpoint();
+  }
+
 }

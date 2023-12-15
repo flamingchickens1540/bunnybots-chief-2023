@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.IndexTemp;
 import frc.robot.subsystems.limelight.Limelight;
@@ -12,6 +13,8 @@ public class ShooterCommands {
     Shooter shooter;
     double mainRPM;
     double secondaryRPM;
+
+    double lockMainRPM;
 
     Limelight limelight;
 
@@ -35,23 +38,26 @@ public class ShooterCommands {
     public void execute() {
       switch (state) {
         case INIT -> {
-          shooter.setLoadingVoltage(-8);
+          shooter.setLoadingVoltage(0);
           state = State.SPINUP;
         }
         case SPINUP -> {
           //TODO calculation based on distance;
+          mainRPM = 4000;
+          secondaryRPM = 2000;
 
           shooter.setMainVelocity(mainRPM);
           shooter.setSecondaryVelocity(secondaryRPM);
-          if (shooter.getMainVelocityRPM() == mainRPM
-              && shooter.getSecondaryVelocityRPM() == secondaryRPM
+          if (shooter.atSetpoints()
               && limelight.aimed()) {
             shooter.setLoadingVoltage(10);
             state = State.SHOOTING;
+            lockMainRPM = mainRPM;
           }
         }
         case SHOOTING -> {
-          if (true) {
+          if (shooter.getMainVelocityRPM() < lockMainRPM - 200) {
+            shooter.setLoadingVoltage(0);
             state = State.DONE;
           }
         }
