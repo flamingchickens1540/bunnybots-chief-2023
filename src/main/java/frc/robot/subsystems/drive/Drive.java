@@ -13,24 +13,14 @@
 
 package frc.robot.subsystems.drive;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.util.LocalADStarAK;
-import frc.robot.util.SwerveDriveKinematicsWrapper;
+import edu.wpi.first.wpilibj2.command.*;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
@@ -45,9 +35,10 @@ public class Drive extends SubsystemBase {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
 
-  private SwerveDriveKinematicsWrapper kinematics = new SwerveDriveKinematicsWrapper(getModuleTranslations());
-  private Pose2d pose = new Pose2d();
+  private final SwerveDriveKinematics kinematics;
   private Rotation2d lastGyroRotation = new Rotation2d();
+
+  private final SwerveDriveOdometry odometry;
 
   public Drive(
       GyroIO gyroIO,
@@ -61,25 +52,35 @@ public class Drive extends SubsystemBase {
     modules[2] = new Module(blModuleIO, 2);
     modules[3] = new Module(brModuleIO, 3);
 
-    // Configure AutoBuilder for PathPlanner
-    AutoBuilder.configureHolonomic(
-        this::getPose,
-        this::setPose,
-        () -> kinematics.toChassisSpeeds(getModuleStates()),
-        this::runVelocity,
-        new HolonomicPathFollowerConfig(
-            MAX_LINEAR_SPEED, DRIVE_BASE_RADIUS, new ReplanningConfig()),
-        this);
-    Pathfinding.setPathfinder(new LocalADStarAK());
-    PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.getInstance().recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.getInstance().recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+//    // Configure AutoBuilder for PathPlanner
+//    AutoBuilder.configureHolonomic(
+//        this::getPose,
+//        this::setPose,
+//        () -> kinematics.toChassisSpeeds(getModuleStates()),
+//        this::runVelocity,
+//        new HolonomicPathFollowerConfig(
+//            MAX_LINEAR_SPEED, DRIVE_BASE_RADIUS, new ReplanningConfig()),
+//        this);
+//    Pathfinding.setPathfinder(new LocalADStarAK());
+//    PathPlannerLogging.setLogActivePathCallback(
+//        (activePath) -> {
+//          Logger.getInstance().recordOutput(
+//              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+//        });
+//    PathPlannerLogging.setLogTargetPoseCallback(
+//        (targetPose) -> {
+//          Logger.getInstance().recordOutput("Odometry/TrajectorySetpoint", targetPose);
+//        });
+
+    kinematics = new SwerveDriveKinematics(getModuleTranslations());
+
+    odometry = new SwerveDriveOdometry(
+            kinematics,
+            Rotation2d.fromRotations(gyroInputs.yawPosition),
+            getModulePositions()
+
+    );
+
   }
 
   public void periodic() {
@@ -88,6 +89,11 @@ public class Drive extends SubsystemBase {
     for (var module : modules) {
       module.periodic();
     }
+
+    odometry.update(
+            Rotation2d.fromRotations(gyroInputs.yawPosition),
+            getModulePositions()
+    );
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
@@ -101,25 +107,25 @@ public class Drive extends SubsystemBase {
       Logger.getInstance().recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
-    // Update odometry
-    SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
-    for (int i = 0; i < 4; i++) {
-      wheelDeltas[i] = modules[i].getPositionDelta();
-    }
-    // The twist represents the motion of the robot since the last
-    // loop cycle in x, y, and theta based only on the modules,
-    // without the gyro. The gyro is always disconnected in simulation.
-    var twist = kinematics.toTwist2d(wheelDeltas);
-    if (gyroInputs.connected) {
-      // If the gyro is connected, replace the theta component of the twist
-      // with the change in angle since the last loop cycle.
-      twist =
-          new Twist2d(
-              twist.dx, twist.dy, Rotation2d.fromDegrees(gyroInputs.yawPosition).minus(lastGyroRotation).getRadians());
-      lastGyroRotation = Rotation2d.fromDegrees(gyroInputs.yawPosition);
-    }
-    // Apply the twist (change since last loop cycle) to the current pose
-    pose = pose.exp(twist);
+//    // Update odometry
+//    SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
+//    for (int i = 0; i < 4; i++) {
+//      wheelDeltas[i] = modules[i].getPositionDelta();
+//    }
+//    // The twist represents the motion of the robot since the last
+//    // loop cycle in x, y, and theta based only on the modules,
+//    // without the gyro. The gyro is always disconnected in simulation.
+//    var twist = kinematics.toTwist2d(wheelDeltas);
+//    if (gyroInputs.connected) {
+//      // If the gyro is connected, replace the theta component of the twist
+//      // with the change in angle since the last loop cycle.
+//      twist =
+//          new Twist2d(
+//              twist.dx, twist.dy, Rotation2d.fromDegrees(gyroInputs.yawPosition).minus(lastGyroRotation).getRadians());
+//      lastGyroRotation = Rotation2d.fromDegrees(gyroInputs.yawPosition);
+//    }
+//    // Apply the twist (change since last loop cycle) to the current pose
+//    pose = pose.exp(twist);
   }
 
   /**
@@ -177,7 +183,8 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       headings[i] = getModuleTranslations()[i].getAngle();
     }
-    kinematics.resetHeadings(headings);
+    // surely this is not a useful function :D
+//    kinematics.resetHeadings(headings);
     stop();
   }
 
@@ -205,24 +212,40 @@ public class Drive extends SubsystemBase {
     }
     return states;
   }
+  public void setModuleStates(SwerveModuleState[] moduleStates) {
+    for(int i = 0; i < moduleStates.length; i++) {
+      modules[i].runSetpoint(moduleStates[i]);
+    }
+  }
 
   /** Returns the current odometry pose. */
   public Pose2d getPose() {
-    return pose;
+    return odometry.getPoseMeters();
   }
 
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
-    return pose.getRotation();
+    return odometry.getPoseMeters().getRotation();
   }
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
-    this.pose = pose;
+    odometry.resetPosition(
+            Rotation2d.fromRotations(gyroInputs.yawPosition),
+            getModulePositions(),
+            pose
+    );
+  }
+  public SwerveModulePosition[] getModulePositions() {
+    SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+    for (int i = 0; i < 4; i++) {
+      modulePositions[i] = modules[i].getPosition();
+    }
+    return modulePositions;
   }
 
   public void resetPose(){
-    this.pose = new Pose2d(pose.getX(), pose.getY(), Rotation2d.fromDegrees(-90));
+
   }
 
   /** Returns the maximum linear speed in meters per sec. */
@@ -244,4 +267,40 @@ public class Drive extends SubsystemBase {
       new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
     };
   }
+
+
+  public SwerveDriveKinematics getKinematics() {
+    return kinematics;
+  }
+  public void resetOdometry() {
+    odometry.resetPosition(
+            Rotation2d.fromRotations(gyroInputs.yawPosition),
+            getModulePositions(),
+            new Pose2d()
+    );
+  }
+
+
+
+//  public Command followTrajectoryCommand(PathPlannerTrajectory traj, boolean isFirstPath) {
+//    return new SequentialCommandGroup(
+//            new InstantCommand(() -> {
+//              // Reset odometry for the first path you run during auto
+//              if(isFirstPath){
+//                this.resetOdometry(traj.getInitialHolonomicPose());
+//              }
+//            }),
+//            new PPSwerveControllerCommand(
+//                    traj,
+//                    (Supplier<Pose2d>) this::getPose, // Pose supplier
+//                  // SwerveDriveKinematics
+//                    new PIDController(0, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+//                    new PIDController(0, 0, 0), // Y controller (usually the same values as X controller)
+//                    new PIDController(0, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+//                    (Consumer<ChassisSpeeds>) this::setModuleStates, // Module states consumer
+//                    true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+//                    this // Requires this drive subsystem
+//            )
+//    );
+//  }
 }
