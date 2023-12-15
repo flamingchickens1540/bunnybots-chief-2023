@@ -4,7 +4,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class IndexerIOReal implements IndexerIO {
-    CANSparkMax indexerMotor = new CANSparkMax(0, MotorType.kBrushless);
+    CANSparkMax indexerMotor = new CANSparkMax(15, MotorType.kBrushless);
 
     @Override
     public void setPercent(double percentage) {
