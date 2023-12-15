@@ -25,7 +25,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 
 public class FlywheelIOTalonFX implements FlywheelIO {
-  private static final double GEAR_RATIO = 22 / 16;
+  private static final double GEAR_RATIO = 16.0/22.0;
 
   private final TalonFX leader = new TalonFX(11);
   private final TalonFX follower = new TalonFX(12);

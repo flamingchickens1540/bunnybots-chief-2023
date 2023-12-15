@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import org.littletonrobotics.junction.Logger;
 
+import java.util.ArrayList;
+
 public class Limelight extends SubsystemBase {
     private final LimelightIO io;
     private final LimelightIOInputsAutoLogged inputs = new LimelightIOInputsAutoLogged();
@@ -23,9 +25,15 @@ public class Limelight extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("Limelight", inputs);
-        if(getTv()) target = bestTargetMinDist();
+
+
+        if(getTv()) target = bestTargetCentral();
 
         Logger.getInstance().recordOutput("Limelight/targetDistance", getDistance());
+        Logger.getInstance().recordOutput("Limelight/targetX", getTx());
+        Logger.getInstance().recordOutput("Limelight/targetY", getTy());
+        Logger.getInstance().recordOutput("Limelight/validTargetsLength", io.getValidTargets().size());
+        Logger.getInstance().recordOutput("Limelight/allTargetsLength", io.getAllTargets().length);
     }
 
     public double getTa() {
@@ -36,6 +44,9 @@ public class Limelight extends SubsystemBase {
         if(getTv()) return target[3];
         return 0;
     }
+    public double getTx(double[] target){
+        return target[3];
+    }
 
     public double getTy() {
         if(getTv()) return target[4];
@@ -43,7 +54,7 @@ public class Limelight extends SubsystemBase {
     }
 
     public boolean getTv() {
-        return inputs.validTarget;
+        return inputs.validTarget && io.getValidTargets().size() > 0;
     }
 
     public double getDistance(){
@@ -56,16 +67,32 @@ public class Limelight extends SubsystemBase {
     }
 
     private double[] bestTargetMinDist(){
-        if (!getTv()) return null;
-        double[] minTarget = io.validTargets[0];
+        if (!getTv()) return null ;
+        ArrayList<double[]> targets = io.getValidTargets();
+        double[] minTarget = targets.get(0);
         double min = getDistance(minTarget);
-        for (int i = 1; i < io.validTargets.length; i++) {
-            if(getDistance(io.validTargets[i]) < min){
-                min = getDistance(io.validTargets[i]);
-                minTarget = io.validTargets[i];
+        for (int i = 1; i < targets.size(); i++) {
+            if(getDistance(targets.get(i)) < min){
+                min = getDistance(targets.get(i));
+                minTarget = targets.get(i);
             }
         }
         return minTarget;
+    }
+
+    private double[] bestTargetCentral(){
+        if (!getTv()) return null;
+        ArrayList<double[]> targets = io.getValidTargets();
+        double[] minTarget = targets.get(0);
+        double min = getTx(targets.get(0));
+        for (int i = 1; i < targets.size(); i++) {
+            if(getTx(targets.get(i)) < min){
+                min = getTx(targets.get(i));
+                minTarget = targets.get(i);
+            }
+        }
+        return minTarget;
+
     }
 
     public boolean aimed(){

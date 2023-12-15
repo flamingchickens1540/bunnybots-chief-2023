@@ -28,7 +28,7 @@ import java.util.function.DoubleSupplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static PIDController pid = new PIDController(0,0,0);
+  private static PIDController pid = new PIDController(1,0,0);
 
   private DriveCommands() {}
 
@@ -88,7 +88,7 @@ public class DriveCommands {
                     double omega = MathUtil.applyDeadband(limelight.getTx() * limelight.getHorizontalFov()/(2*100), 0.01);
                     // Square values
                     linearMagnitude = linearMagnitude * linearMagnitude;
-                    omega = Math.copySign(omega * omega, omega);
+//                    omega = Math.copySign(omega * omega, omega);
 
                     // Calcaulate new linear velocity
                     Translation2d linearVelocity =

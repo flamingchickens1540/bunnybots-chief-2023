@@ -99,6 +99,7 @@ public class ShooterCommands {
 
     @Override
     public void execute() {
+//      shooter.setMainVelocity(mainRPM.get());
       shooter.setMainVelocity(mainRPM.get());
       shooter.setSecondaryVelocity(secondaryRPM.get());
       shooter.setLoadingVoltage(loadingVoltage.get());

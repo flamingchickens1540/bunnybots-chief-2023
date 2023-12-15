@@ -4,9 +4,11 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import java.util.ArrayList;
+
 public interface LimelightIO {
     public double[][] allTargets = {};
-    public double[][] validTargets = {};
+    public ArrayList<double[]> validTargets = new ArrayList<>();
 
     @AutoLog
     public static class LimelightIOInputs{
@@ -25,4 +27,8 @@ public interface LimelightIO {
     }
 
     public default void updateInputs(LimelightIOInputs inputs) {}
+
+    public  double[][] getAllTargets();
+    public ArrayList<double[]> getValidTargets();
+
 }

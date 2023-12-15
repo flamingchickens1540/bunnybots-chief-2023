@@ -25,8 +25,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.shooter.*;
@@ -45,6 +48,7 @@ public class RobotContainer {
   private final Shooter shooter;
 
   private final Limelight limelight;
+  private final Intake intake;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -69,8 +73,10 @@ public class RobotContainer {
                 new Shooter(
                         new FlywheelIOTalonFX(),
                         new FlywheelIOSparkMaxSingle(1, 13, false, 20),
-                        new FlywheelIOSparkMaxSingle(10, 14, true, 40));
+                        new FlywheelIOSparkMaxSingle(1.0/10.0, 14, true, 40));
         limelight = new Limelight(new LimelightIOReal());
+//        limelight = null;
+        intake = new Intake(new IntakeIOReal());
         break;
       }
 
@@ -87,6 +93,7 @@ public class RobotContainer {
                         new ModuleIOSim());
         shooter = null;
         limelight = null;
+        intake = null;
         break;
       }
 
@@ -106,6 +113,7 @@ public class RobotContainer {
                         });
         shooter = null;
         limelight = null;
+        intake = null;
         break;
       }
     }
@@ -134,6 +142,7 @@ public class RobotContainer {
 
 //    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
       shooter.setDefaultCommand(new ShooterCommands.ShooterTesting(shooter));
+      intake.setDefaultCommand(new IntakeCommands.IntakeTesting(intake));
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     controller.y().onTrue(new InstantCommand(() -> drive.resetPose()));
 //    controller
@@ -146,7 +155,10 @@ public class RobotContainer {
 //                    drive)
 //                .ignoringDisable(true));
 
-    controller.a()
+    controller.a().onTrue(new IntakeCommands.IntakeDown(intake));
+    controller.b().onTrue(new IntakeCommands.IntakeUp(intake));
+
+    controller.rightTrigger(0.7)
             .whileTrue(DriveCommands.LimelightRotDrive(
               drive,
               () -> -controller.getLeftX(),

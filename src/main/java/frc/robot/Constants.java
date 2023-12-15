@@ -62,4 +62,10 @@ public final class Constants {
 
 
   }
+
+  public static class Intake {
+    public static int rollerID = 18;
+    public static int leadPivotID = 17;
+    public static int followerPivotID = 16;
+  }
 }

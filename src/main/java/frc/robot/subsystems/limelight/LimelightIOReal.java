@@ -13,15 +13,15 @@ public class LimelightIOReal implements LimelightIO{
 
     LimelightHelpers.LimelightResults limelightResults;
     public LimelightIOReal(){
-        LimelightHelpers.setPipelineIndex("",9);
+        LimelightHelpers.setPipelineIndex("limelight-rear",9);
         LimelightHelpers.setLEDMode_PipelineControl("");
     }
 
     @Override
     public void updateInputs(LimelightIOInputs inputs) {
         validTargets.clear();
-        limelightResults = LimelightHelpers.getLatestResults("");
-        inputs.fullDump = limelightResults.toString();
+        limelightResults = LimelightHelpers.getLatestResults("limelight-rear");
+        inputs.fullDump = "bruh";
         inputs.validTarget = limelightResults.targetingResults.valid;
         inputs.captureLatencyMs = limelightResults.targetingResults.latency_capture;
         inputs.pipelineLatencyMs = limelightResults.targetingResults.latency_pipeline;
@@ -36,10 +36,19 @@ public class LimelightIOReal implements LimelightIO{
             LimelightHelpers.LimelightTarget_Detector target = limelightResults.targetingResults.targets_Detector[i];
             double[] temp = new double[]{target.classID, target.confidence, target.ta, target.tx, target.ty};
             allTargets[i] = temp;
-            if(target.classID == (DriverStation.getAlliance() == DriverStation.Alliance.Red?1.0:0)){
+            if(target.classID == (DriverStation.getAlliance() == DriverStation.Alliance.Blue?1.0:0)){
                 validTargets1.add(temp);
             }
         }
         validTargets = validTargets1;
+    }
+
+    public double[][] getAllTargets(){
+        return allTargets;
+    }
+
+    @Override
+    public ArrayList<double[]> getValidTargets() {
+        return validTargets;
     }
 }
