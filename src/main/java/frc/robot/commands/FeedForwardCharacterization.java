@@ -14,10 +14,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.util.PolynomialRegression;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -102,6 +105,8 @@ public class FeedForwardCharacterization extends CommandBase {
       System.out.println(String.format("\tR2=%.5f", regression.R2()));
       System.out.println(String.format("\tkS=%.5f", regression.beta(0)));
       System.out.println(String.format("\tkV=%.5f", regression.beta(1)));
+      SmartDashboard.putNumber("ks", regression.beta(0));
+      SmartDashboard.putNumber("kv", regression.beta(1));
     }
   }
 }

@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger;
 
 
 public class Intake extends SubsystemBase {
-  private static final boolean TUNING_MODE = true;
+  private static final boolean TUNING_MODE = false;
   private final IntakeIO io;
 
   private final IntakeInputsAutoLogged inputs = new IntakeInputsAutoLogged();
@@ -28,15 +28,14 @@ public class Intake extends SubsystemBase {
   public Intake(IntakeIO io) {
     this.io = io;
     io.setPivotBreakMode(true);
+    io.configureLeadPID(0.05, 0, .7);
+    io.configureSecondPID(0.045, 0, 4);
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.getInstance().processInputs("Intake", inputs);
-
-    io.configureLeadPID(0.05, 0, .7);
-    io.configureSecondPID(0.045, 0, 4);
 
 
     if (TUNING_MODE && (kPLead.hasChanged() || kILead.hasChanged() || kDLead.hasChanged())) {

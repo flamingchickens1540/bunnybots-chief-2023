@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.limelight.Limelight;
 
 import java.util.function.DoubleSupplier;
@@ -98,7 +99,7 @@ public class DriveCommands {
                             ChassisSpeeds.fromFieldRelativeSpeeds(
                                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    (pid.calculate(omega, 0) + MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND)) * drive.getMaxAngularSpeedRadPerSec(),
+                                    (pid.calculate(omega, 0)) * drive.getMaxAngularSpeedRadPerSec(),
 //                                    omega * drive.getMaxAngularSpeedRadPerSec(),
 
                                     drive.getRotation()));
@@ -107,11 +108,14 @@ public class DriveCommands {
     }
 
     public static class JustinCase extends SequentialCommandGroup {
-        public JustinCase(Drive drive){
+        public JustinCase(Drive drive, Intake intake){
             addCommands(
+                    new InstantCommand(() -> drive.resetPose()),
+                    new InstantCommand(() -> intake.zeroPivotAngle()),
+                    new IntakeCommands.IntakeUp(intake),
                     new ParallelRaceGroup(
                             new WaitCommand(1),
-                            joystickDrive(drive, () -> 0.0, () -> 0.5, () -> 0.0)
+                            joystickDrive(drive, () -> 0.0, () -> -0.5, () -> 0.0)
                     ),
                     joystickDrive(drive, () -> 0.0, () -> 0.0, () -> 0.0)
             );

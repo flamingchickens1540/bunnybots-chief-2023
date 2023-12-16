@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ShooterCommands.Eject;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.commands.ShooterCommands.ShooterIdle;
 import frc.robot.subsystems.drive.*;
@@ -142,7 +143,7 @@ public class RobotContainer {
             () -> controller.getLeftY(),
             () -> -controller.getRightX()));
 
-//    shooter.setDefaultCommand(new ShooterIdle(shooter));
+    shooter.setDefaultCommand(new ShooterIdle(shooter));
 //      shooter.setDefaultCommand(new ShooterCommands.ShooterTesting(shooter));
 //      intake.setDefaultCommand(new IntakeCommands.IntakeTesting(intake));
     indexer.setDefaultCommand(new InstantCommand(() -> indexer.setVoltage(9), indexer));
@@ -187,11 +188,12 @@ public class RobotContainer {
                     () -> -controller.getRightX(),
                     limelight))
             .whileTrue(new RepeatCommand(new Shoot(shooter, limelight)));
+    copilot.a().whileTrue(new Eject(shooter));
 
 //    controller.x().whileTrue(new ShooterCommands.ShooterTesting(shooter));
   }
 
-  private void configureAutoChooser(){
+  private void configureAutoChooser() {
     // Set up auto routines
 
     // Set up FF characterization routines
@@ -214,10 +216,14 @@ public class RobotContainer {
 //                    shooter::getSecondaryCharacterizationVelocity));
     autoChooser.addOption(
             "Justin Case",
-            new DriveCommands.JustinCase(drive));
+            new DriveCommands.JustinCase(drive, intake));
+
     autoChooser.addOption(
             "Do Nothing",
-            new InstantCommand(() -> {}));
+            new SequentialCommandGroup(
+                    new InstantCommand(() -> drive.resetPose()),
+                    new InstantCommand(() -> intake.zeroPivotAngle()),
+                    new IntakeCommands.IntakeUp(intake)));
   }
 
   /**
@@ -226,11 +232,11 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(
-            new InstantCommand(() -> drive.resetPose()),
-            new InstantCommand(() -> intake.zeroPivotAngle()),
-            new IntakeCommands.IntakeUp(intake),
-            autoChooser.get()
-    );
+//    return new SequentialCommandGroup(
+//            new InstantCommand(() -> drive.resetPose()),
+//            new InstantCommand(() -> intake.zeroPivotAngle()),
+//            new IntakeCommands.IntakeUp(intake),
+            return autoChooser.get();
+//    );
   }
 }

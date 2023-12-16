@@ -9,7 +9,7 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
-  private final boolean TUNING = true;
+  private final boolean TUNING = false;
   private final FlywheelIO mainWheelIO;
   private final FlywheelIOInputsAutoLogged mainWheelInputs = new FlywheelIOInputsAutoLogged();
   private final FlywheelIO secondaryWheelIO;
@@ -21,7 +21,7 @@ public class Shooter extends SubsystemBase {
   private final LoggedTunableNumber kIMain = new LoggedTunableNumber("Shooter/kIMain", 0);
   private final LoggedTunableNumber kDMain = new LoggedTunableNumber("Shooter/kDMain", 0.001);
 
-  private final SimpleMotorFeedforward mainff = new SimpleMotorFeedforward(-0.02528, 0.01320);
+  private final SimpleMotorFeedforward mainff = new SimpleMotorFeedforward(-0.085537, 0.013528);
 
   private final LoggedTunableNumber kPSecondary = new LoggedTunableNumber("Shooter/kPSecondary", 0);
   private final LoggedTunableNumber kISecondary = new LoggedTunableNumber("Shooter/kISecondary", 0);

@@ -5,16 +5,11 @@ import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.shooter.Shooter;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
-public class Shoot extends CommandBase {
+public class Eject extends CommandBase {
 
     Shooter shooter;
-    double mainRPM;
-    double secondaryRPM;
-
-    double lockMainRPM;
     int counter = 0;
 
-    Limelight limelight;
 
     enum State {
         INIT,
@@ -25,14 +20,10 @@ public class Shoot extends CommandBase {
     }
 
     State state = State.SPINUP;
-    LoggedDashboardNumber mainRPMLog = new LoggedDashboardNumber("mainrpm", 6500);
-    LoggedDashboardNumber secondRPMLog = new LoggedDashboardNumber("secondrpm", 0);
 
-    public Shoot(Shooter shooter, Limelight limelight) {
+    public Eject(Shooter shooter) {
         this.shooter = shooter;
         addRequirements(shooter);
-
-        this.limelight = limelight;
     }
 
     @Override
@@ -48,21 +39,16 @@ public class Shoot extends CommandBase {
 //          indexTemp.setPercent(.75);
                 shooter.setLoadingVoltage(0);
                 state = State.SPINUP;
+                shooter.setMainVelocity(4000);
             }
             case SPINUP -> {
                 //TODO calculation based on distance;
-                mainRPM = mainRPMLog.get();
-                secondaryRPM = secondRPMLog.get();
-
-                shooter.setMainVelocity(mainRPM);
-                shooter.setSecondaryVelocity(secondaryRPM);
-                if (shooter.atSetpoints()
+                if (shooter.atSetpoints() || shooter.getMainVelocityRPM() > 4000
                         ){
 //            indexTemp.setPercent(-.75);
 //              && limelight.aimed()) {
                     shooter.setLoadingVoltage(4);
                     state = State.SHOOTING;
-                    lockMainRPM = mainRPM;
                 }
             }
             case SHOOTING -> {
