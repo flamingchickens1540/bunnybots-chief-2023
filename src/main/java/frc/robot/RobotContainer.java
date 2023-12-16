@@ -150,7 +150,7 @@ public class RobotContainer {
 
 
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    controller.y().onTrue(new InstantCommand(() -> drive.resetPose()));
+    controller.leftBumper().onTrue(new InstantCommand(() -> drive.resetPose()));
 //    controller
 //        .b()
 //        .onTrue(
@@ -165,7 +165,7 @@ public class RobotContainer {
         rightTrigger(0.7)
             .onTrue(new IntakeCommands.IntakeDown(intake))
             .onFalse(new IntakeCommands.IntakeUp(intake));
-    controller.leftBumper().onTrue(new IntakeCommands.IntakeUp(intake));
+    controller.rightBumper().onTrue(new IntakeCommands.IntakeUp(intake));
 
     copilot
 //    controller
