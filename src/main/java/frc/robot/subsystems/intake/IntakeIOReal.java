@@ -111,4 +111,10 @@ public class IntakeIOReal implements IntakeIO {
     leadSparkPID.setReference(position.getRotations(), CANSparkMax.ControlType.kPosition);
     followSparkPID.setReference(position.getRotations(), CANSparkMax.ControlType.kPosition);;
   }
+
+  @Override
+  public void zeroPivotPosition() {
+    leadSpark.getEncoder().setPosition(0);
+    followSpark.getEncoder().setPosition(0);
+  }
 }

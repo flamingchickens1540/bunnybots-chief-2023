@@ -23,6 +23,7 @@ public interface IntakeIO {
   public default void setPivotBreakMode(boolean breakMode) {}
 
   public default void setPivotPosition(Rotation2d position){}
+  public default void zeroPivotPosition(){}
 
   public default void configureLeadPID(double kP, double kI, double kD){}
   public default void configureSecondPID(double kP, double kI, double kD){}

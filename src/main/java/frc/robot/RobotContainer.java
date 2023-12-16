@@ -19,11 +19,14 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeedForwardCharacterization;
-import frc.robot.commands.ShooterCommands;
-import frc.robot.subsystems.IndexCommand;
-import frc.robot.subsystems.IndexTemp;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ShooterCommands.Shoot;
+import frc.robot.commands.ShooterCommands.ShooterIdle;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIOReal;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.shooter.*;
@@ -42,7 +45,7 @@ public class RobotContainer {
 
   private final Limelight limelight;
   private final Intake intake;
-  private final IndexTemp index;
+  private final Indexer indexer;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -53,7 +56,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    index = new IndexTemp();
     switch (Constants.currentMode) {
       case REAL: {
         // Real robot, instantiate hardware IO implementations
@@ -72,8 +74,9 @@ public class RobotContainer {
                         new FlywheelIOSparkMaxSingle(1.0/10.0, 14, false, 40));
         limelight = new Limelight(new LimelightIOReal());
 //        limelight = null;
-//        intake = new Intake(new IntakeIOReal());
-        intake = null;
+        intake = new Intake(new IntakeIOReal());
+//        intake = null;
+        indexer = new Indexer(new IndexerIOReal());
         break;
       }
 
@@ -91,6 +94,7 @@ public class RobotContainer {
         shooter = null;
         limelight = null;
         intake = null;
+        indexer = null;
         break;
       }
 
@@ -111,6 +115,7 @@ public class RobotContainer {
         shooter = null;
         limelight = null;
         intake = null;
+        indexer = null;
         break;
       }
     }
@@ -137,10 +142,11 @@ public class RobotContainer {
             () -> controller.getLeftY(),
             () -> -controller.getRightX()));
 
-    shooter.setDefaultCommand(new ShooterCommands.ShooterIdle(shooter));
+//    shooter.setDefaultCommand(new ShooterIdle(shooter));
 //      shooter.setDefaultCommand(new ShooterCommands.ShooterTesting(shooter));
 //      intake.setDefaultCommand(new IntakeCommands.IntakeTesting(intake));
-    index.setDefaultCommand(new IndexCommand(index));
+    indexer.setDefaultCommand(new InstantCommand(() -> indexer.setVoltage(9), indexer));
+
 
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     controller.y().onTrue(new InstantCommand(() -> drive.resetPose()));
@@ -154,10 +160,11 @@ public class RobotContainer {
 //                    drive)
 //                .ignoringDisable(true));
 
-//    controller.
-//        a().
-//          onTrue(new IntakeCommands.IntakeDown(intake));
-//          onFalse(new IntakeCommands.IntakeUp(intake));
+    controller.
+        rightTrigger(0.7)
+            .onTrue(new IntakeCommands.IntakeDown(intake))
+            .onFalse(new IntakeCommands.IntakeUp(intake));
+    controller.leftBumper().onTrue(new IntakeCommands.IntakeUp(intake));
 
     copilot
 //    controller
@@ -166,8 +173,21 @@ public class RobotContainer {
               drive,
               () -> -controller.getLeftX(),
               () -> controller.getLeftY(),
+              () -> -controller.getRightX(),
                     limelight))
-            .whileTrue(new ShooterCommands.Shoot(shooter,limelight));
+            .whileTrue(new Shoot(shooter,limelight));
+
+    copilot
+//    controller
+            .leftTrigger(0.7)
+            .whileTrue(DriveCommands.LimelightRotDrive(
+                    drive,
+                    () -> -controller.getLeftX(),
+                    () -> controller.getLeftY(),
+                    () -> -controller.getRightX(),
+                    limelight))
+            .whileTrue(new RepeatCommand(new Shoot(shooter, limelight)));
+
 //    controller.x().whileTrue(new ShooterCommands.ShooterTesting(shooter));
   }
 
@@ -175,26 +195,29 @@ public class RobotContainer {
     // Set up auto routines
 
     // Set up FF characterization routines
-    autoChooser.addOption(
-        "Drive FF Characterization",
-        new FeedForwardCharacterization(
-            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
+//    autoChooser.addOption(
+//        "Drive FF Characterization",
+//        new FeedForwardCharacterization(
+//            drive, drive::runCharacterizationVolts, drive::getCharacterizationVelocity));
 
-    autoChooser.addOption(
-            "Shooter Main FF Characterization",
-            new FeedForwardCharacterization(
-                    shooter,
-                    shooter::runMainCharacterizationVolts,
-                    shooter::getMainCharacterizationVelocity));
-    autoChooser.addOption(
-            "Shooter Secondary FF Characterization",
-            new FeedForwardCharacterization(
-                    shooter,
-                    shooter::runSecondaryCharacterizationVolts,
-                    shooter::getSecondaryCharacterizationVelocity));
+//    autoChooser.addOption(
+//            "Shooter Main FF Characterization",
+//            new FeedForwardCharacterization(
+//                    shooter,
+//                    shooter::runMainCharacterizationVolts,
+//                    shooter::getMainCharacterizationVelocity));
+//    autoChooser.addOption(
+//            "Shooter Secondary FF Characterization",
+//            new FeedForwardCharacterization(
+//                    shooter,
+//                    shooter::runSecondaryCharacterizationVolts,
+//                    shooter::getSecondaryCharacterizationVelocity));
     autoChooser.addOption(
             "Justin Case",
             new DriveCommands.JustinCase(drive));
+    autoChooser.addOption(
+            "Do Nothing",
+            new InstantCommand(() -> {}));
   }
 
   /**
@@ -205,7 +228,8 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return new SequentialCommandGroup(
             new InstantCommand(() -> drive.resetPose()),
-//            new IntakeCommands.IntakeUp(intake),
+            new InstantCommand(() -> intake.zeroPivotAngle()),
+            new IntakeCommands.IntakeUp(intake),
             autoChooser.get()
     );
   }

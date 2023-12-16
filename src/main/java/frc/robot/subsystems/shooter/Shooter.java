@@ -132,10 +132,10 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean mainAtSetpoint(){
-    return mainFilter.atSetpoint(mainSetpoint, 50);
+    return mainFilter.atSetpoint(mainSetpoint, 100);
   }
   public boolean secondaryAtSetpoint(){
-    return secondaryFilter.atSetpoint(secondarySetpoint, 50);
+    return secondaryFilter.atSetpoint(secondarySetpoint, 100);
   }
   public boolean atSetpoints(){
     return mainAtSetpoint() && secondaryAtSetpoint();

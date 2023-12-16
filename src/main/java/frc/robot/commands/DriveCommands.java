@@ -50,10 +50,6 @@ public class DriveCommands {
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
-          // Square values
-          linearMagnitude = linearMagnitude * linearMagnitude;
-          omega = Math.copySign(omega * omega, omega);
-
           // Calcaulate new linear velocity
           Translation2d linearVelocity =
               new Pose2d(new Translation2d(), linearDirection)
@@ -75,6 +71,7 @@ public class DriveCommands {
             Drive drive,
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier,
+            DoubleSupplier omegaSupplier,
             Limelight limelight) {
         return Commands.run(
                 () -> {
@@ -87,7 +84,7 @@ public class DriveCommands {
                             new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
                     double omega = MathUtil.applyDeadband(limelight.getTx() * limelight.getHorizontalFov()/(2*100), 0.01);
                     // Square values
-                    linearMagnitude = linearMagnitude * linearMagnitude;
+//                    linearMagnitude = linearMagnitude * linearMagnitude;
 //                    omega = Math.copySign(omega * omega, omega);
 
                     // Calcaulate new linear velocity
@@ -101,7 +98,7 @@ public class DriveCommands {
                             ChassisSpeeds.fromFieldRelativeSpeeds(
                                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    pid.calculate(omega, 0) * drive.getMaxAngularSpeedRadPerSec(),
+                                    (pid.calculate(omega, 0) + MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND)) * drive.getMaxAngularSpeedRadPerSec(),
 //                                    omega * drive.getMaxAngularSpeedRadPerSec(),
 
                                     drive.getRotation()));

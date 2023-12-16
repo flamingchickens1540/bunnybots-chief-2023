@@ -59,6 +59,10 @@ public class Intake extends SubsystemBase {
     io.setPivotPosition(angle);
   }
 
+  public void zeroPivotAngle(){
+    io.zeroPivotPosition();
+  }
+
 
 
 }
