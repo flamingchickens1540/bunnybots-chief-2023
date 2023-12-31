@@ -51,8 +51,8 @@ public class Shoot extends CommandBase {
             }
             case SPINUP -> {
                 //TODO calculation based on distance;
-                mainRPM = mainRPMLog.get();
-                secondaryRPM = secondRPMLog.get();
+                mainRPM = 6500;
+                secondaryRPM = 0;
 
                 shooter.setMainVelocity(mainRPM);
                 shooter.setSecondaryVelocity(secondaryRPM);

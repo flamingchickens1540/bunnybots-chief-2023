@@ -224,6 +224,10 @@ public class RobotContainer {
                     new InstantCommand(() -> drive.resetPose()),
                     new InstantCommand(() -> intake.zeroPivotAngle()),
                     new IntakeCommands.IntakeUp(intake)));
+    autoChooser.addOption(
+            "Shoot and Drive",
+            new DriveCommands.ShootAndDrive(drive, intake, shooter, limelight, indexer)
+    );
   }
 
   /**

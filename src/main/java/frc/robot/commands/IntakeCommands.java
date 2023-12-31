@@ -33,7 +33,7 @@ public class IntakeCommands {
         @Override
         public void initialize() {
             intake.setPivotAngle(Rotation2d.fromRotations(5));
-            intake.rollerVoltage(0);
+            intake.rollerVoltage(8);
         }
     }
 

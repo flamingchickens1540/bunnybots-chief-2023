@@ -21,9 +21,12 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.limelight.Limelight;
+import frc.robot.subsystems.shooter.Shooter;
 
 import java.util.function.DoubleSupplier;
 
@@ -111,14 +114,32 @@ public class DriveCommands {
         public JustinCase(Drive drive, Intake intake){
             addCommands(
                     new InstantCommand(() -> drive.resetPose()),
-                    new InstantCommand(() -> intake.zeroPivotAngle()),
-                    new IntakeCommands.IntakeUp(intake),
+//                    new InstantCommand(() -> intake.zeroPivotAngle()),
                     new ParallelRaceGroup(
-                            new WaitCommand(1),
+//                            new IntakeCommands.IntakeUp(intake),
+                            new WaitCommand(1)
+                    ),
+                    new ParallelRaceGroup(
+                            new WaitCommand(3),
                             joystickDrive(drive, () -> 0.0, () -> -0.5, () -> 0.0)
                     ),
                     joystickDrive(drive, () -> 0.0, () -> 0.0, () -> 0.0)
             );
+        }
+    }
+
+    public static class ShootAndDrive extends SequentialCommandGroup{
+      public ShootAndDrive(Drive drive, Intake intake, Shooter shooter, Limelight limelight, Indexer indexer){
+          addCommands(
+                  new JustinCase(drive, intake),
+//                  new InstantCommand(() -> indexer.setVoltage(9)),
+                  new Shoot(shooter, limelight),
+                  new WaitCommand(1),
+                  new Shoot(shooter, limelight),
+                  new WaitCommand(1),
+                  new Shoot(shooter, limelight),
+                  new WaitCommand(1)
+          );
         }
     }
 }
